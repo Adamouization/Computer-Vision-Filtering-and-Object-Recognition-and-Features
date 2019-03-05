@@ -1,4 +1,4 @@
-import matplotlib.image as mpimg
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -10,16 +10,18 @@ def main():
     """
     image_directory = "dataset/Training/png/"
     image_name = "001-lighthouse.png"
-    img = mpimg.imread(image_directory + image_name)
-    plt.imshow(img)
-    plt.title(image_name)
-    plt.show()
 
-    kernel = np.ones((5, 5))/25  # blur kernel
-    conv_img = convolution(img, kernel)
-    plt.imshow(conv_img)
-    plt.title("Convoluted Image")
-    plt.show()
+    img = cv2.imread(image_directory + image_name)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # cv2.imshow("Gray image", gray)
+    # cv2.waitKey(0)
+
+    kernel = np.ones((3, 3))/9  # blur kernel
+    conv_img = convolution(gray, kernel)
+
+    cv2.imshow("Convoluted image", conv_img)
+    cv2.waitKey(0)
 
 
 def convolution(image, kernel):
@@ -44,16 +46,17 @@ def convolution(image, kernel):
     convoluted_img = np.zeros((img_height, img_width))
 
     # loop through each pixel in the image
-    for i in range(img_height):
-        for j in range(img_width):
-            # print("i:{} j:{}".format(i, j))
+    for i in range(0, img_width - 1):
+        for j in range(0, img_height - 1):
             accumulator = 0
             # loop through each cell in the kernel
-            for m in range(kernel_height):
-                for n in range(kernel_width):
-                    # todo perform convolution calculations here
-                    pass
-
+            for m in range(kernel_width):
+                for n in range(kernel_height):
+                    # print("i+m={}, j+n={}".format(i+m, j+n))
+                    # print("img_height-1 = {}, img_width-1={}".format(img_height-1, img_width-1))
+                    if m+i <= img_height - 1 and n+j <= img_width - 1:
+                        accumulator += kernel[m][n] * image[i+m][j+n]
+            convoluted_img[i][j] = accumulator
     return convoluted_img
 
 
