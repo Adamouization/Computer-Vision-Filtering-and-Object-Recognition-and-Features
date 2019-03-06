@@ -19,10 +19,12 @@ def main():
     img = cv2.imread(image_directory + image_name)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # cv2.imshow("Gray image", gray)
-    # cv2.waitKey(0)
+    cv2.imshow("Gray image", gray)
+    #cv2.waitKey(0)
 
-    kernel = np.ones((3, 3))/9  # blur kernel
+    size=3;
+    kernel = np.ones((size, size))/(size*size)  # blur kernel
+    print(type(gray))
     conv_img = convolution(gray, kernel)
 
     cv2.imshow("Convoluted image", conv_img)
@@ -48,20 +50,57 @@ def convolution(image, kernel):
         img_height, img_width, kernel_height, kernel_width)
     )
 
-    convoluted_img = np.zeros((img_height, img_width))
+    #convoluted_img = np.zeros((img_height, img_width,1), np.uint8)
 
+
+    #convoluted_img = np.zeros((img_height, img_width))
+    #convoluted_img = convoluted_img.astype(int)
+    convoluted_img=image
+
+#                i i       i
+#                = =       =
+#                0 1 - - - img_width - 1
+#j=0    n=0      o o o . . .
+#j=1    n=1      o o o . . .
+#.               o o o . . .
+#.               . . . . . .
+#.               . . . . . .
+#j=img_height-1  . . . . . .
     # loop through each pixel in the image
-    for i in range(0, img_width - 1):
-        for j in range(0, img_height - 1):
+
+    kernel_width_span_factor=int((kernel_width-1)/2)
+    kernel_height_span_factor=int((kernel_height-1)/2)
+
+    for i in range(kernel_width_span_factor, img_width - kernel_width_span_factor):
+        if i % 100 == 0:
+            print("")
+        for j in range(kernel_height_span_factor, img_height - kernel_height_span_factor):
             accumulator = 0
             # loop through each cell in the kernel
-            for m in range(kernel_width):
-                for n in range(kernel_height):
+            for m in range(kernel_width-1):
+                for n in range(kernel_height-1):
                     # print("i+m={}, j+n={}".format(i+m, j+n))
                     # print("img_height-1 = {}, img_width-1={}".format(img_height-1, img_width-1))
-                    if m+i <= img_height - 1 and n+j <= img_width - 1:
-                        accumulator += kernel[m][n] * image[i+m][j+n]
-            convoluted_img[i][j] = accumulator
+                    if m+i <= img_width - 1 and n+j <= img_height - 1:
+                        accumulator += kernel[m][n] * image[i+(m-kernel_width_span_factor)][j+(n-kernel_height_span_factor)]
+            convoluted_img[i][j] = int(accumulator)*2
+            if m==1 and n==1 and i%100==0 and j%100==0:
+                st=str(convoluted_img[i][j])
+                print(' ', end=st)
+
+                #print("{} ".format(convoluted_img[i][j]))
+                #print("accumulator:{}\nconvoluted_img[i][j]: {}\ni: {}\nj: {}\nimage: {}".format(accumulator, convoluted_img[i][j], i, j, image[i][j]))
+
+    print("")
+
+    for i in range(kernel_width_span_factor, img_width - kernel_width_span_factor):
+        if i % 100 == 0:
+            print("")
+        for j in range(kernel_height_span_factor, img_height - kernel_height_span_factor):
+            if m==1 and n==1 and i%100==0 and j%100==0:
+                st = str(image[i][j])
+                print(' ', end=st)
+
     return convoluted_img
 
 
