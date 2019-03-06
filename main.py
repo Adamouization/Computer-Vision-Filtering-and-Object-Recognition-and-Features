@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +12,9 @@ def main():
     """
     image_directory = "dataset/Training/png/"
     image_name = "001-lighthouse.png"
+
+    gauss = gaussian_kernel(5, 5, 1)
+    print(gauss)
 
     img = cv2.imread(image_directory + image_name)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -58,6 +63,30 @@ def convolution(image, kernel):
                         accumulator += kernel[m][n] * image[i+m][j+n]
             convoluted_img[i][j] = accumulator
     return convoluted_img
+
+
+def gaussian_kernel(rows, columns, dev=1):
+    """
+    Generates a gaussian matrix to be used to blur an image when used as a convolution filter.
+    :param rows: the width of the kernel
+    :param columns: the height of the kernel
+    :param dev: the standard deviation
+    :return: the kernel as a numpy.ndarray
+    """
+    output_matrix = np.zeros((rows, columns))  # initialise output kernel
+
+    matrix_sum = 0
+    r = int((rows - 1) / 2)  # used for the loops to leave out borders and to center kernel loop
+    c = int((columns - 1) / 2)  # used for the loops to leave out borders and to center kernel loop
+
+    # loop through each row of image then each column (pixel) of that row
+    for i in range(-r, r + 1, 1):
+        for j in range(-c, c + 1, 1):
+            gaussian_value = (1 / (2 * math.pi * (dev ** 2))) * math.exp(((i ** 2) + (j ** 2)) / (2 * (dev ** 2)))
+            output_matrix[i + r, j + c] = gaussian_value
+            matrix_sum += gaussian_value
+
+    return output_matrix / matrix_sum
 
 
 if __name__ == "__main__":
