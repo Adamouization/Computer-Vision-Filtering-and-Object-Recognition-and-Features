@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from src.convolution import convolution, gaussian_kernel
-from src.helpers import get_video_filenames
+from src.helpers import get_class_name_from_file, get_video_filenames
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
     testing_dataset_directory = "dataset/Test/"
 
     # Blur an image
-    blur_image(training_dataset_directory, "001-lighthouse.png")
+    # blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
     intensity_based_template_matching_training(training_dataset_directory)
@@ -41,6 +41,10 @@ def intensity_based_template_matching_training(directory):
     images = get_video_filenames(directory)
     print("\nTraining image file names:")
     print(images)
+
+    for im in images:
+        classname = get_class_name_from_file(im)
+        print(classname)
 
 
 def intensity_based_template_matching_testing(directory):

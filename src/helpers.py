@@ -14,3 +14,7 @@ def get_video_filenames(directory):
         else:
             print("no png files found in directory '{}'".format(directory))
     return list_of_videos
+
+
+def get_class_name_from_file(image):
+    return os.path.splitext(image)[0].split("-")[1]
