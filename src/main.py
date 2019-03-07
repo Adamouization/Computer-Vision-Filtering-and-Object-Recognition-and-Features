@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from convolution import convolution, gaussian_kernel
+from src.convolution import convolution, gaussian_kernel
 
 
 def main():
