@@ -48,9 +48,9 @@ def convolution(image, kernel):
             #print("extended_img[{}, {}] = {}".format(i + m, j + n, extended_img[i + m, j + n]))
             #print("accumulator = {}".format(accumulator))
             #print("\n-----\n")
-            for m in range(-r, r+1):
-                for n in range(-c, c+1):
-                    accumulator += kernel[m, n] * extended_img[i + m, j + n]
+            for m in range(-r-1, r):
+                for n in range(-c-1, c):
+                    accumulator += kernel[m + r + 1, n + c + 1] * extended_img[i + m + 1, j + n + 1]
 
             output_img[i, j] = accumulator
 

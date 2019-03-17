@@ -19,20 +19,19 @@ def main():
     testing_dataset_directory = "dataset/Test/"
 
     # Blur an image
-    # blur_image(training_dataset_directory, "001-lighthouse.png")
+    blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
-    intensity_based_template_matching_training(training_dataset_directory)
+    #intensity_based_template_matching_training(training_dataset_directory)
 
     # Test the intensity-based template matching model
     # intensity_based_template_matching_testing(testing_dataset_directory)
 
 
 def blur_image(directory, image):
-    blur_kernel = gaussian_kernel(5, 5, 1)  # gauss_kernel
+    blur_kernel = gaussian_kernel(9, 9, 1)  # gauss_kernel
     # blur_kernel = np.ones((9, 9)) / 81
-
-    img = cv2.imread(directory + image)
+    img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/dataset/Training/png/001-lighthouse.png")
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     conv_img = convolution(gray, blur_kernel)
 
