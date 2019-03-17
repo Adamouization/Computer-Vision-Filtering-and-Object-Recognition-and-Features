@@ -22,7 +22,7 @@ def get_class_name_from_file(image):
     :param image: full filename (including extension)
     :return: string with only the filename to use as
     """
-    return os.path.splitext(image)[0].split("-")[1]
+    return image[4:][:-4]
 
 
 def get_scale_in_percentage(pyramid_depth):

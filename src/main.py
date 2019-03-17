@@ -27,10 +27,10 @@ def main():
     # blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
-    # intensity_based_template_matching_training(training_dataset_directory)
+    intensity_based_template_matching_training(training_dataset_directory)
 
     # Test the intensity-based template matching model
-    intensity_based_template_matching_testing(testing_dataset_directory)
+    # intensity_based_template_matching_testing(testing_dataset_directory)
 
 
 def blur_image(directory, image):
@@ -86,7 +86,8 @@ def intensity_based_template_matching_training(directory):
 
                 # write to binary file
                 file = open(
-                    "{}/templates/{}/rot{}-sca{}.dat".format(directory, classname, r, get_scale_in_percentage(p)), 'wb'
+                    "{}/templates/{}/rot{}-sca{}.dat".format(directory, classname, int(r), get_scale_in_percentage(p)),
+                    'wb'
                 )
                 pickle.dump(rotated_scaled_img, file)
                 file.close()
