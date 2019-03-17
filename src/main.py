@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle
 
@@ -6,6 +7,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy import ndimage, signal
 
+import src.config as settings
 from src.convolution import convolution, gaussian_kernel, reduce_size
 from src.helpers import get_class_name_from_file, get_scale_in_percentage, get_video_filenames
 from src.template_matching import subsample_image
@@ -23,21 +25,60 @@ def main():
     training_dataset_directory = "dataset/Training/"
     testing_dataset_directory = "dataset/Test/"
 
-    # Blur an image
-    # blur_image(training_dataset_directory, "001-lighthouse.png")
+    parser = argparse.ArgumentParser()
 
-    # Train the intensity-based template matching model
-    intensity_based_template_matching_training(training_dataset_directory)
+    parser.add_argument("-m", "--model",
+                        required=True,
+                        help="The histogram model to use. Choose from the following options: 'convolution', "
+                             "'intensity' or 'sift."
+                        )
+    parser.add_argument("--mode",
+                        required=True,
+                        help="Training or testing the model. Choose from 'train' or 'test'"
+                        )
+    parser.add_argument("-d", "--debug",
+                        action="store_true",
+                        help="Specify whether you want to print additional logs for debugging purposes.")
+    args = parser.parse_args()
+    settings.model_type = args.model
+    settings.mode = args.mode
+    settings.debug = args.debug
 
-    # Test the intensity-based template matching model
-    # intensity_based_template_matching_testing(testing_dataset_directory)
+    if settings.model_type == 'blur':
+        # Blur an image
+        blur_image(training_dataset_directory, "png/001-lighthouse.png")
+    elif settings.model_type == 'intensity':
+        if settings.mode == 'train':
+            # Train the intensity-based template matching model
+            intensity_based_template_matching_training(training_dataset_directory)
+        elif settings.mode == 'test':
+            # Test the intensity-based template matching model
+            intensity_based_template_matching_testing(testing_dataset_directory)
+        else:
+            print("Invalid mode chosen. Choose from 'train' or 'test'")
+            exit(0)
+    elif settings.model_type == 'sift':
+        if settings.mode == 'train':
+            # todo Train the sift-based template matching model
+            pass
+        elif settings.mode == 'test':
+            # todo Test the sift-based template matching model
+            pass
+        else:
+            print("Invalid mode chosen. Choose from 'train' or 'test'")
+            exit(0)
+    else:
+        print("Invalid model chosen. Choose from 'blur', 'intensity' or 'sift'")
+        exit(0)
 
 
 def blur_image(directory, image):
-    blur_kernel = gaussian_kernel(5, 5, 1)  # gauss_kernel
-    # blur_kernel = np.ones((7, 7)) / 49
-    # blur_kernel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    # blur_kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    # choose a kernel for convolution
+    gaussian_filter = gaussian_kernel(5, 5, 1)
+    uniform_blur_kernel = np.ones((7, 7)) / 49
+    horizontal_edge_detector = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    vertical_edge_detector = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    blur_kernel = gaussian_filter
 
     img = cv2.imread(directory + image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -55,7 +96,6 @@ def blur_image(directory, image):
 
     # calculate difference between library convolution and our convolution function
     difference = library_conv_smaller - conv_img_smaller
-    # DEBUG
     # for m in range(5,500,10):
     #     myarr = list()
     #     for n in range(5,500,10):
@@ -91,6 +131,7 @@ def intensity_based_template_matching_training(directory):
                 )
                 pickle.dump(rotated_scaled_img, file)
                 file.close()
+        print("Generated templates for {}".format(classname))
 
     # read an image from one of the binary files
     # from_binary = np.load("dataset/Training/templates/airport/rot300.0-sca6.25%.dat")
@@ -106,7 +147,7 @@ def intensity_based_template_matching_testing(directory):
     img = cv2.imread("dataset/Test/test_10.png", 0)
     img2 = img.copy()
 
-    template = np.load("dataset/Training/templates/airport/rot270.0-sca50%.dat")
+    template = np.load("dataset/Training/templates/airport/rot270-sca50%.dat")
     w, h = template.shape[::-1]
     img = img2.copy()
 
