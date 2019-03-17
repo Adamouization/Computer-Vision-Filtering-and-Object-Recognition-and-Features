@@ -1,3 +1,6 @@
+import os
+import pickle
+
 import cv2
 import numpy as np
 from scipy import ndimage, signal
@@ -15,7 +18,7 @@ def main():
     Program entry point.
     :return: None
     """
-    training_dataset_directory = "dataset/Training/png/"
+    training_dataset_directory = "dataset/Training/"
     testing_dataset_directory = "dataset/Test/"
 
     # Blur an image
@@ -67,23 +70,29 @@ def blur_image(directory, image):
 
 
 def intensity_based_template_matching_training(directory):
-    images = get_video_filenames(directory)
+    images = get_video_filenames(directory + "png/")
     print("\nTraining image file names:")
     print(images)
 
-    for im in images:
-        classname = get_class_name_from_file(im)
-        print(classname)
-
-    for s in scaling:
+    for image in images:
+        classname = get_class_name_from_file(image)
+        img = cv2.imread(directory + "png/" + image)  # read image from file
+        # for s in scaling:
         for r in rotations:
-            print("scaling: {}, rotation: {}".format(s, r))
+            # rotate image by r degrees
+            rotated_img = ndimage.rotate(img, r)
 
-    img = cv2.imread("/Users/ajaamour/Projects/Computer-Vision-Coursework/dataset/Training/png/001-lighthouse.png")
-    img30 = ndimage.rotate(img, 30.0)
+            # check if directory exists, if it doesn't create it
+            if not os.path.exists("{}/templates/{}".format(directory, classname)):
+                os.makedirs("{}/templates/{}".format(directory, classname))
 
-    img30.dump("dataset/Training/templates/test.dat")
-    from_binary = np.load("dataset/Training/templates/test.dat")
+            # write to binary file
+            file = open("{}/templates/{}/rot{}-sca{}.dat".format(directory, classname, r, "1"), 'wb')
+            pickle.dump(rotated_img, file)
+            file.close()
+
+    # read an image from one of the binary files
+    from_binary = np.load("dataset/Training/templates/telephone-r90.0-s1.dat")
     cv2.imshow("from_binary", from_binary)
     cv2.waitKey(0)
 
