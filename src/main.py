@@ -22,13 +22,13 @@ def main():
     testing_dataset_directory = "dataset/Test/"
 
     # Blur an image
-    blur_image(training_dataset_directory, "001-lighthouse.png")
+    # blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
     intensity_based_template_matching_training(training_dataset_directory)
 
     # Test the intensity-based template matching model
-    intensity_based_template_matching_testing(testing_dataset_directory)
+    #intensity_based_template_matching_testing(testing_dataset_directory)
 
 
 def blur_image(directory, image):
@@ -67,10 +67,16 @@ def blur_image(directory, image):
 
 
 def intensity_based_template_matching_training(directory):
-    images = get_video_filenames(directory + "png/")
+    images = get_video_filenames("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/dataset/Training/png/")
     print("\nTraining image file names:")
     print(images)
 
+    andrea_dir="/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/dataset/Training/png/002-bike.png"
+
+    given_percentage_give_subsampled_array(andrea_dir, 3)  # provide numbers: 1, 2, 3, ... to indicate how many times to halve the image
+
+
+    """
     for image in images:
         classname = get_class_name_from_file(image)
         img = cv2.imread(directory + "png/" + image)  # read image from file
@@ -92,6 +98,64 @@ def intensity_based_template_matching_training(directory):
     from_binary = np.load("dataset/Training/templates/telephone-r90.0-s1.dat")
     cv2.imshow("from_binary", from_binary)
     cv2.waitKey(0)
+    """
+
+
+def given_percentage_give_subsampled_array(andrea_dir, percentage):
+    blur_kernel = gaussian_kernel(5, 5, 15)
+    img = cv2.imread(andrea_dir)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    library_conv = signal.convolve2d(gray, blur_kernel, mode="full", boundary="fill", fillvalue=0)
+    library_conv = library_conv.astype(np.uint8)
+
+    library_conv_smaller = reduce_size(library_conv, blur_kernel)
+
+    img_height = library_conv_smaller.shape[0]
+    img_width = library_conv_smaller.shape[1]
+
+
+    prev_scaled_img = library_conv_smaller
+    for k in range(0, percentage):
+        scaled_img = np.zeros((int(img_height / 2), int(img_height / 2)), dtype=np.uint8)  # assumption that HEIGHT = WIDTH for ALL TRAINING IMAGES!!!
+        i = 0
+        for m in range(0, img_height, 2):       # assumption that HEIGHT = WIDTH for ALL TRAINING IMAGES!!!
+            j = 0
+            for n in range(0, img_height, 2):   # assumption that HEIGHT = WIDTH for ALL TRAINING IMAGES!!!
+                scaled_img[i, j] = prev_scaled_img[m, n]
+                j = j + 1
+            i = i + 1
+        prev_scaled_img = scaled_img
+        prev_scaled_img = signal.convolve2d(prev_scaled_img, blur_kernel, mode="full", boundary="fill", fillvalue=0)
+        prev_scaled_img = reduce_size(prev_scaled_img, blur_kernel)
+        img_height = prev_scaled_img.shape[0]
+        img_width = prev_scaled_img.shape[1]
+        cv2.imshow("Scaled image", scaled_img)
+
+    print("hello")
+    cv2.waitKey(0)
+"""
+    n_to_skip = int(1/percentage)
+
+    print(n_to_skip)
+    count_size = 0;
+    for m in range(0, img_height, n_to_skip):
+        count_size = count_size + 1
+    print("count_size")
+    print(count_size)
+    scaled_img = np.zeros((count_size, count_size), dtype=np.uint8)
+
+    i = 0
+    for m in range(0, img_height, n_to_skip):       # assumption that HEIGHT = WIDTH for ALL TRAINING IMAGES!!!
+        j = 0
+        for n in range(0, img_height, n_to_skip):   # assumption that HEIGHT = WIDTH for ALL TRAINING IMAGES!!!
+            scaled_img[i, j] = library_conv_smaller[m, n]
+            j = j + 1
+        i = i + 1
+
+    print("hello")"""
+
+
 
 
 def intensity_based_template_matching_testing(directory):
