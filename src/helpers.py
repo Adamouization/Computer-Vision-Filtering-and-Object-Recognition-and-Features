@@ -17,4 +17,9 @@ def get_video_filenames(directory):
 
 
 def get_class_name_from_file(image):
+    """
+    Get the filename from the training dataset
+    :param image: full filename (including extension)
+    :return: string with only the filename to use as
+    """
     return os.path.splitext(image)[0].split("-")[1]
