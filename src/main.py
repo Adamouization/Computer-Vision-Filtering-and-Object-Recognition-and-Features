@@ -29,8 +29,11 @@ def main():
 
 
 def blur_image(directory, image):
-    blur_kernel = gaussian_kernel(9, 9, 1)  # gauss_kernel
-    # blur_kernel = np.ones((9, 9)) / 81
+    #blur_kernel = gaussian_kernel(5, 5, 1)  # gauss_kernel
+    blur_kernel = np.ones((7, 7)) / 49
+    #blur_kernel = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    #blur_kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+
     img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/dataset/Training/png/001-lighthouse.png")
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     conv_img = convolution(gray, blur_kernel)
@@ -47,16 +50,19 @@ def blur_image(directory, image):
 
     diff = library_conv_smaller - conv_img_smaller
 
-    diff_ori = conv_img - library_conv
+    #diff_ori = conv_img - library_conv
+    #diff_func(conv_img, library_conv)
 
-    for m in range(0,500,10):
+    for m in range(5,500,10):
         myarr = list()
-        for n in range(0,500,10):
+        for n in range(5,500,10):
             myarr.append(diff[m,n])
         print(myarr)
 
     cv2.imshow("Convoluted image", conv_img_smaller)
     cv2.imshow("Library convolution", library_conv_smaller)
+    cv2.imshow("diff image", diff)
+
     cv2.waitKey(0)
 
 
