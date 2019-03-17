@@ -15,7 +15,7 @@ A function which takes an image and a kernel as inputs, and computes the two-dim
 
 **Output 1 :** The function should output an image of the same size as the original. Areas outside of the image are treated as zero. The results to the in-built conv2 function of MATLAB. Tested with a range of kernels: blurs of different sizes and edge detectors in different directions.
 
-## Task 2: Intensity-based template matching (worth 9 pts)
+## Task 2: Intensity-based template matching
 
 A function which takes an image from Test dataset and outputs the following:
 
@@ -30,33 +30,23 @@ Choice of parameters: Gaussian kernel specs, initial/final scales, number of sca
 **Pre-processing:** For each (scaled and rotated) template the background is set to zero and normalized it (the mean equal is set to zero, and the Euclidean norm of the template is set to 1. For the Test data all backgrounds are set to zero.
 
 **Intensity-based matching (related to output 2.1):** Slide each template image 푇 over the given test
-image 퐼 (across x, y directions) and report the similarity score based on their correlations
+image 퐼 (across x, y directions) and report the similarity score based on their correlations 𝑐𝑜𝑟(𝑥, 𝑦) = sum 𝑇(𝑖, 𝑗)𝐼(𝑖 + 𝑥, 𝑗 + 𝑦))
 
-### 푐표푟(푥,푦)=-푇(푖,푗)퐼(푖−푥,푗−푦)
+Appropriate thresholds on the similarity measure are defined, along with a proper non-maxima suppression strategy
+returned with the **output 2.1** to minimize the False Positive and False Negative rates.
 
-1 , 2
-This formula should be familiar to you. What does it indicate? According to that propose an efficient
-implementation.
-Define appropriate thresholds on this similarity measure, a proper non-maxima suppression strategy
-and return the **output 2.1** in specified format.
+## Task 3: Feature-based template matching using SIFT
 
-Throughout, choose appropriate parameters (and report them) in order to minimize the False
-Positive and False Negative rates.
+Implementatin of a simple form of the scale-invariant feature transform (SIFT) method described by Lowe [1-3].
 
-
-## Task 3: Feature-based template matching using SIFT (worth 13 pts)
-
-In this part you will implement a simple form of the scale-invariant feature transform (SIFT) method
-described by Lowe [1-3].
-
-First of all, write a function which creates a DoG pyramid from an image. This function will upgrade
-your Gaussian pyramid implementation in the last task– note that unlike the previous section, each
+First of all, a function which creates a DoG pyramid from an image is created. This function upgrades
+the Gaussian pyramid implementation in the last task (note: unlike the previous section, each
 level i.e. octave of the pyramid, will have multiple (for example s=3) Gaussians applied before
-resampling. Next, look for local extrema in this DoG space. Each interest point is then a point given
-by (푥,휎), where 휎 represents the scale of the feature.
-**Output 3.1 ( 4 pts):** Visualise your results on the original image as boxes where, each box is scaled by
-the size of the feature it represents. Demonstrate your algorithm on a range of images from the
-Training and Test datasets.
+resampling). Next, local extrema are searched in this DoG space. Each interest point is then a point given
+by (𝑥,𝜎), where 𝜎 represents the scale of the feature.
+
+**Output 3.1 ( 4 pts):** Visualise the results on the original image as boxes where each box is scaled by
+the size of the feature it represents.
 
 **Output 3.2 (4 pts):** SIFT interest points can be refined to improve low-quality results. For this part,
 filter your results using the methods described in the references [1-3], including low contrast and
@@ -93,8 +83,10 @@ key steps. Learning to find the relevant section of the paper you are reading is
 
 [1] Lowe, David G. "Object recognition from local scale-invariant features." Computer vision, 1999.
 The proceedings of the seventh IEEE international conference on. Vol. 2. IEEE, 1999.
+
 [2] Lowe, David G. "Distinctive image features from scale-invariant keypoints." International journal
 of computer vision, 60.2 (2004): 91-110.
+
 [3] https://people.cs.pitt.edu/~kovashka/cs3710_sp15/features_yan.pdf
 
 
