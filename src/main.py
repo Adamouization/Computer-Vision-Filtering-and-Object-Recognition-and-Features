@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from scipy import signal
 
 from src.convolution import convolution, gaussian_kernel
 from src.helpers import get_class_name_from_file, get_video_filenames
@@ -14,7 +15,7 @@ def main():
     testing_dataset_directory = "dataset/Test/"
 
     # Blur an image
-    # blur_image(training_dataset_directory, "001-lighthouse.png")
+    blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
     intensity_based_template_matching_training(training_dataset_directory)
@@ -29,11 +30,18 @@ def blur_image(directory, image):
 
     img = cv2.imread(directory + image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    conv_img = convolution(gray, gauss_kernel)
+    conv_img = convolution(gray, blur_kernel)
 
     cv2.imshow("Original image", gray)
     cv2.imshow("Convoluted image", conv_img)
+
+    library_conv = signal.convolve2d(gray, blur_kernel, mode="full", boundary="wrap", fillvalue=0)
+    library_conv = library_conv.astype(np.uint8)
+
+    # diff = library_conv - conv_img
+    # print(diff)
+
+    cv2.imshow("Library convolution", library_conv)
     cv2.waitKey(0)
 
 

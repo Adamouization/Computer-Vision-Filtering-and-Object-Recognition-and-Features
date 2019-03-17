@@ -30,10 +30,14 @@ def convolution(image, kernel):
     kernel_height = kernel.shape[0]
     kernel_width = kernel.shape[1]
 
-    output_img = np.zeros((img_width, img_height), dtype=np.uint8)
-
     r = int((kernel_width - 1) / 2)
     c = int((kernel_height - 1) / 2)
+
+    extended_img = np.pad(image, [r, c], mode="constant")
+    img_height = extended_img.shape[0]
+    img_width = extended_img.shape[1]
+
+    output_img = np.zeros((img_width, img_height), dtype=np.uint8)
 
     for i in range(r + 1, img_width - r):
         for j in range(c + 1, img_height - c):
@@ -41,9 +45,9 @@ def convolution(image, kernel):
 
             for m in range(-r, r):
                 for n in range(-c, c):
-                    accumulator += kernel[m + r + 1, n + c + 1] * image[i + m, j + n]
+                    accumulator += kernel[m + r + 1, n + c + 1] * extended_img[i + m, j + n]
 
-            output_img[i, j] = accumulator
+            output_img[i - r, j - c] = accumulator
 
     return output_img
 
