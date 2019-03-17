@@ -23,3 +23,24 @@ def get_class_name_from_file(image):
     :return: string with only the filename to use as
     """
     return os.path.splitext(image)[0].split("-")[1]
+
+
+def get_scale_in_percentage(pyramid_depth):
+    """
+    Returns a string representing the percentage the image was downsampled to.
+    :param pyramid_depth: the number of times to subsample by half
+    :return: string in percentage
+    """
+    if pyramid_depth == 0:
+        return "100%"
+    elif pyramid_depth == 1:
+        return "50%"
+    elif pyramid_depth == 2:
+        return "25%"
+    elif pyramid_depth == 3:
+        return "12.5%"
+    elif pyramid_depth == 4:
+        return "6.25%"
+    elif pyramid_depth == 5:
+        return "3.125%"
+    return "0%"
