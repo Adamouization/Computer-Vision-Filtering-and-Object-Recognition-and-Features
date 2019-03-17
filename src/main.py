@@ -2,6 +2,7 @@ import os
 import pickle
 
 import cv2
+from matplotlib import pyplot as plt
 import numpy as np
 from scipy import ndimage, signal
 
@@ -26,7 +27,7 @@ def main():
     # blur_image(training_dataset_directory, "001-lighthouse.png")
 
     # Train the intensity-based template matching model
-    intensity_based_template_matching_training(training_dataset_directory)
+    # intensity_based_template_matching_training(training_dataset_directory)
 
     # Test the intensity-based template matching model
     intensity_based_template_matching_testing(testing_dataset_directory)
@@ -98,8 +99,33 @@ def intensity_based_template_matching_training(directory):
 
 def intensity_based_template_matching_testing(directory):
     images = get_video_filenames(directory)
-    print("\nTesting image file names:")
+    print("\nTraining image file names:")
     print(images)
+
+    img = cv2.imread("dataset/Test/test_10.png", 0)
+    img2 = img.copy()
+
+    template = np.load("dataset/Training/templates/airport/rot270.0-sca50%.dat")
+    w, h = template.shape[::-1]
+    img = img2.copy()
+
+    # Apply template Matching
+    method = eval('cv2.TM_SQDIFF')
+    res = cv2.matchTemplate(img, template, method)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    top_left = min_loc
+    bottom_right = (top_left[0] + w, top_left[1] + h)
+
+    cv2.rectangle(img, top_left, bottom_right, 255, 2)
+
+    plt.subplot(121), plt.imshow(res, cmap='gray')
+    plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122), plt.imshow(img, cmap='gray')
+    plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+    plt.suptitle('cv2.TM_SQDIFF')
+
+    plt.show()
 
 
 if __name__ == "__main__":
