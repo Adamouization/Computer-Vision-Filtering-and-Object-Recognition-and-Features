@@ -29,17 +29,14 @@ def main():
 
 
 def blur_image(directory, image):
-    blur_kernel = gaussian_kernel(5, 5, 1) #gauss_kernel
-    #blur_kernel = np.ones((9, 9)) / 81
+    blur_kernel = gaussian_kernel(5, 5, 1)  # gauss_kernel
+    # blur_kernel = np.ones((9, 9)) / 81
 
-
-
-    img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/dataset/Training/png/001-lighthouse.png")
+    img = cv2.imread(directory + image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     conv_img = convolution(gray, blur_kernel)
 
     cv2.imshow("Original image", gray)
-
 
     library_conv = signal.convolve2d(gray, blur_kernel, mode="full", boundary="fill", fillvalue=0)
     library_conv = library_conv.astype(np.uint8)

@@ -26,7 +26,6 @@ def convolution(image, kernel):
     """
     kn = kernel
 
-
     img_height = image.shape[0]
     img_width = image.shape[1]
 
@@ -99,7 +98,6 @@ def reduce_size(image, kernel):
     print(r)
     print(c)
     return new_im
-
 
 
 def gaussian_kernel(rows, columns, dev=1):
