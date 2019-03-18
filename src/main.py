@@ -19,7 +19,7 @@ rotations = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 30
 
 def main():
     """
-    Program entry point.
+    Program entry point. Parses command line arguments.
     :return: None
     """
     training_dataset_directory = "dataset/Training/"
@@ -47,6 +47,7 @@ def main():
     if settings.model_type == 'blur':
         # Blur an image
         blur_image(training_dataset_directory, "png/001-lighthouse.png")
+
     elif settings.model_type == 'intensity':
         if settings.mode == 'train':
             # Train the intensity-based template matching model
@@ -57,6 +58,7 @@ def main():
         else:
             print("Invalid mode chosen. Choose from 'train' or 'test'")
             exit(0)
+
     elif settings.model_type == 'sift':
         if settings.mode == 'train':
             # todo Train the sift-based template matching model
@@ -67,12 +69,19 @@ def main():
         else:
             print("Invalid mode chosen. Choose from 'train' or 'test'")
             exit(0)
+
     else:
         print("Invalid model chosen. Choose from 'blur', 'intensity' or 'sift'")
         exit(0)
 
 
 def blur_image(directory, image):
+    """
+    Takes care of performing convolution over an image.
+    :param directory:
+    :param image:
+    :return: None
+    """
     # choose a kernel for convolution
     gaussian_filter = gaussian_kernel(5, 5, 1)
     uniform_blur_kernel = np.ones((7, 7)) / 49
@@ -109,6 +118,11 @@ def blur_image(directory, image):
 
 
 def intensity_based_template_matching_training(directory):
+    """
+    Trains the intensity-based model with the 50 images from the dataset.
+    :param directory: path to the training dataset
+    :return: None
+    """
     for image in get_video_filenames(directory + "png/"):
         classname = get_class_name_from_file(image)
         img = cv2.imread(directory + "png/" + image)  # read image from file
@@ -134,12 +148,17 @@ def intensity_based_template_matching_training(directory):
         print("Generated templates for {}".format(classname))
 
     # read an image from one of the binary files
-    # from_binary = np.load("dataset/Training/templates/airport/rot300.0-sca6.25%.dat")
+    # from_binary = np.load("dataset/Training/templates/bridge/rot300-sca6.25%.dat")
     # cv2.imshow("from_binary", from_binary)
     # cv2.waitKey(0)
 
 
 def intensity_based_template_matching_testing(directory):
+    """
+    Tests the trained model with 20 test images.
+    :param directory: path to the testing dataset
+    :return: None
+    """
     images = get_video_filenames(directory)
     print("\nTraining image file names:")
     print(images)
@@ -153,8 +172,8 @@ def intensity_based_template_matching_testing(directory):
 
     # Apply template Matching
     method = eval('cv2.TM_SQDIFF')
-    res = cv2.matchTemplate(img, template, method)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    res = cv2.matchTemplate(img, template, method)  # todo implement
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  # todo implement
 
     top_left = min_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)

@@ -20,7 +20,7 @@ def subsample_image(img, pyramid_depth):
 
     # blur the image using the gaussian kernel
     gaussian_filter = gaussian_kernel(5, 5, 15)
-    blurred_img = signal.convolve2d(gray, gaussian_filter, mode="full", boundary="fill", fillvalue=0)
+    blurred_img = signal.convolve2d(gray, gaussian_filter, mode="full", boundary="fill", fillvalue=255)
     blurred_img = blurred_img.astype(np.uint8)
     blurred_img_reduced = reduce_size(blurred_img, gaussian_filter)
 
@@ -42,7 +42,7 @@ def subsample_image(img, pyramid_depth):
                 j += 1
             i += 1
         prev_scaled_img = scaled_img
-        prev_scaled_img = signal.convolve2d(prev_scaled_img, gaussian_filter, mode="full", boundary="fill", fillvalue=0)
+        prev_scaled_img = signal.convolve2d(prev_scaled_img, gaussian_filter, mode="full", boundary="fill", fillvalue=255)
         prev_scaled_img = reduce_size(prev_scaled_img, gaussian_filter)
         img_height = prev_scaled_img.shape[0]
         img_width = prev_scaled_img.shape[1]
