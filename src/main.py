@@ -10,7 +10,7 @@ from scipy import ndimage, signal
 import src.config as settings
 from src.convolution import convolution, gaussian_kernel, reduce_size
 from src.helpers import get_class_name_from_file, get_scale_in_percentage, get_video_filenames
-from src.template_matching import fill_black, subsample_image
+from src.template_matching import fill_black, normalize_image, subsample_image
 
 
 scaling_pyramid_depths = [1, 2, 3, 4]
@@ -129,7 +129,8 @@ def intensity_based_template_matching_training(directory):
         # read the image from file, convert it to gray scale, and replace white pixels with black pixels
         img = cv2.imread(directory + "png/" + image)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = fill_black(gray)
+        normalized = normalize_image(gray)
+        img = fill_black(normalized)
 
         # start generating the pyramid of templates
         for p in scaling_pyramid_depths:

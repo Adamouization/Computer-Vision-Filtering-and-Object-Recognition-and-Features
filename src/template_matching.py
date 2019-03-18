@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from scipy import signal
 
@@ -16,6 +17,17 @@ def fill_black(img):
             if img[i, j] == 255:  # look for white pixels
                 img[i, j] = 0  # replace with black pixels
     return img
+
+
+def normalize_image(img):
+    """
+    Normalizes an image.
+    :param img: the image to normalize
+    :return: the normalized image
+    """
+    normalized_img = np.zeros((img.shape[0], img.shape[1]))
+    normalized_img = cv2.normalize(img, normalized_img, 0, 255, cv2.NORM_MINMAX)
+    return normalized_img
 
 
 def subsample_image(img, pyramid_depth):
