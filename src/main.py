@@ -193,7 +193,7 @@ def intensity_based_template_matching_testing(directory):
 
     # my trigonometry function
 
-    second_corner_height = find_rect_corners_with_trigonometry(10, 10)
+    second_corner_height = find_rect_corners_with_trigonometry(100, 10)
     print(second_corner_height)
 
     cv2.rectangle(img, top_left, bottom_right, 255, 2)
