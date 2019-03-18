@@ -75,3 +75,16 @@ def subsample_image(img, pyramid_depth):
         img_width = prev_scaled_img.shape[1]
 
     return scaled_img
+
+
+def find_rect_corners_with_trigonometry(angle, img_height):
+    alpha = np.deg2rad(angle)
+    k = (np.sin(alpha)) * (np.sin(alpha))
+    h = img_height
+
+    d = (np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
+    # THIS IS THE OTHER POSSIBLE SOLUTION WITH MINUS d = -(np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
+
+    c = img_height - d
+
+    return c

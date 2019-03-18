@@ -10,7 +10,7 @@ from scipy import ndimage, signal
 import src.config as settings
 from src.convolution import convolution, gaussian_kernel, reduce_size
 from src.helpers import get_class_name_from_file, get_scale_in_percentage, get_video_filenames
-from src.template_matching import fill_black, normalize_image, subsample_image
+from src.template_matching import fill_black, normalize_image, subsample_image, find_rect_corners_with_trigonometry
 
 
 scaling_pyramid_depths = [1, 2, 3, 4]
@@ -184,6 +184,11 @@ def intensity_based_template_matching_testing(directory):
 
     top_left = min_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
+
+    # my trigonometry function
+
+    second_corner_height = find_rect_corners_with_trigonometry(10, 10)
+    print(second_corner_height)
 
     cv2.rectangle(img, top_left, bottom_right, 255, 2)
 
