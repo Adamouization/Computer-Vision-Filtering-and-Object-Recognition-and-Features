@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from scipy import signal
 
 
 def convolution(image, kernel):
@@ -56,6 +57,33 @@ def convolution(image, kernel):
             output_img[i, j] = accumulator
 
     return output_img
+
+
+def perform_custom_convolution(img, kernel):
+    """
+    Performs convolution using the custom convolution function written in this module.
+    :param img: the image to perform convolution on
+    :param kernel: the kernel to convolute with
+    :return: the convoluted image
+    """
+    conv_img = convolution(img, kernel)
+    conv_img_smaller = reduce_size(conv_img, kernel)
+    conv_img_smaller = reduce_size(conv_img_smaller, kernel)
+    return conv_img_smaller
+
+
+def perform_library_convolution(img, kernel):
+    """
+    Performs convolution using the library conv2 function from Numpy.
+    :param img: the image to perform convolution on
+    :param kernel: the kernel to convolute with
+    :return: the convoluted image
+    """
+    library_conv = signal.convolve2d(img, kernel, mode="full", boundary="fill", fillvalue=0)
+    library_conv = library_conv.astype(np.uint8)
+    library_conv_smaller = reduce_size(library_conv, kernel)
+    library_conv_smaller = reduce_size(library_conv_smaller, kernel)
+    return library_conv_smaller
 
 
 def reduce_size(image, kernel):

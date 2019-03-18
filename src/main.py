@@ -1,11 +1,8 @@
 import argparse
-import os
 import pickle
 
-import cv2
 from matplotlib import pyplot as plt
-import numpy as np
-from scipy import ndimage, signal
+from scipy import ndimage
 
 import src.config as settings
 from src.convolution import *
@@ -33,7 +30,7 @@ def main():
                              "'intensity' or 'sift."
                         )
     parser.add_argument("--mode",
-                        required=True,
+                        required=False,
                         help="Training or testing the model. Choose from 'train' or 'test'"
                         )
     parser.add_argument("-d", "--debug",
@@ -44,7 +41,7 @@ def main():
     settings.mode = args.mode
     settings.debug = args.debug
 
-    if settings.model_type == 'blur':
+    if settings.model_type == 'convolution':
         # Blur an image
         blur_image(training_dataset_directory, "png/001-lighthouse.png")
 
@@ -82,39 +79,58 @@ def blur_image(directory, image):
     :param image:
     :return: None
     """
-    # choose a kernel for convolution
-    gaussian_filter = gaussian_kernel(5, 5, 1)
-    uniform_blur_kernel = np.ones((7, 7)) / 49
-    horizontal_edge_detector = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    vertical_edge_detector = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    blur_kernel = gaussian_filter
-
     img = cv2.imread(directory + image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    conv_img = convolution(gray, blur_kernel)
 
-    cv2.imshow("Original image", gray)
+    # Gaussian Blur
+    gaussian_filter = gaussian_kernel(9, 9, 15)
+    custom_conv = perform_custom_convolution(gray, gaussian_filter)
+    library_conv = perform_library_convolution(gray, gaussian_filter)
+    difference = library_conv - custom_conv
+    plt.subplot(4, 3, 1), plt.imshow(custom_conv, cmap='gray')
+    plt.title("Custom gaussian blur"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 2), plt.imshow(library_conv, cmap='gray')
+    plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 3), plt.imshow(difference, cmap='gray')
+    plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    library_conv = signal.convolve2d(gray, blur_kernel, mode="full", boundary="fill", fillvalue=0)
-    library_conv = library_conv.astype(np.uint8)
+    # Uniform Blur
+    uniform_blur_kernel = np.ones((7, 7)) / 49
+    custom_conv = perform_custom_convolution(gray, uniform_blur_kernel)
+    library_conv = perform_library_convolution(gray, uniform_blur_kernel)
+    difference = library_conv - custom_conv
+    plt.subplot(4, 3, 4), plt.imshow(custom_conv, cmap='gray')
+    plt.title("Custom uniform blur"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 5), plt.imshow(library_conv, cmap='gray')
+    plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 6), plt.imshow(difference, cmap='gray')
+    plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    conv_img_smaller = reduce_size(conv_img, blur_kernel)
-    library_conv_smaller = reduce_size(library_conv, blur_kernel)
-    conv_img_smaller = reduce_size(conv_img_smaller, blur_kernel)
-    library_conv_smaller = reduce_size(library_conv_smaller, blur_kernel)
+    # Vertical Edge
+    vertical_edge_detector = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    custom_conv = perform_custom_convolution(gray, vertical_edge_detector)
+    library_conv = perform_library_convolution(gray, vertical_edge_detector)
+    difference = library_conv - custom_conv
+    plt.subplot(4, 3, 7), plt.imshow(custom_conv, cmap='gray')
+    plt.title("Custom vertical edge"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 8), plt.imshow(library_conv, cmap='gray')
+    plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 9), plt.imshow(difference, cmap='gray')
+    plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    # calculate difference between library convolution and our convolution function
-    difference = library_conv_smaller - conv_img_smaller
-    # for m in range(5,500,10):
-    #     myarr = list()
-    #     for n in range(5,500,10):
-    #         myarr.append(diff[m,n])
-    #     print(myarr)
+    # Horizontal Edge
+    horizontal_edge_detector = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    custom_conv = perform_custom_convolution(gray, horizontal_edge_detector)
+    library_conv = perform_library_convolution(gray, horizontal_edge_detector)
+    difference = library_conv - custom_conv
+    plt.subplot(4, 3, 10), plt.imshow(custom_conv, cmap='gray')
+    plt.title("Custom horizontal edge"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 11), plt.imshow(library_conv, cmap='gray')
+    plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 12), plt.imshow(difference, cmap='gray')
+    plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    cv2.imshow("Convoluted image", conv_img_smaller)
-    cv2.imshow("Library convolution", library_conv_smaller)
-    cv2.imshow("Difference", difference)
-    cv2.waitKey(0)
+    plt.show()
 
 
 def intensity_based_template_matching_training(directory):
