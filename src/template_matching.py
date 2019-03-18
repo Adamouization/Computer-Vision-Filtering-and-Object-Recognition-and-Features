@@ -78,6 +78,12 @@ def subsample_image(img, pyramid_depth):
 
 
 def find_rect_corners_with_trigonometry(angle, img_height):
+    """
+    Calculates the coordinates of a rotated rectangle.
+    :param angle: the angle to rotate the rectangle's coordinates to
+    :param img_height: the height of the image that is going to be surrounded by the rectangle
+    :return: coord_dict: dictionnary with the 4 (x,y) coordinates required to draw a rectangle around an object
+    """
     if angle < 90:
         alpha = np.deg2rad(angle)
     else:
@@ -96,7 +102,7 @@ def find_rect_corners_with_trigonometry(angle, img_height):
     h = img_height
 
     d = (np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
-    # THIS IS THE OTHER POSSIBLE SOLUTION WITH MINUS d = -(np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
+    # other possible solution with -d = -(np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
 
     c = img_height - d
 
@@ -111,76 +117,69 @@ def find_rect_corners_with_trigonometry(angle, img_height):
     #    .-----. P2       .-----. P3       .-----. P4       .-----. P1
     #    P1               P2               P3               P4
 
-    P1x = 0
-    P1y = 0
-
-    P2x = 0
-    P2y = 0
-
-    P3x = 0
-    P3y = 0
-
-    P4x = 0
-    P4y = 0
-
+    p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y = (0,) * 8
     if angle < 90:
-        P1x = c
-        P1y = 0
-
-        P2x = h
-        P2y = c
-
-        P3x = h - c
-        P3y = h
-
-        P4x = 0
-        P4y = h - c
+        # P1
+        p1x = c
+        p1y = 0
+        # P2
+        p2x = h
+        p2y = c
+        # P3
+        p3x = h - c
+        p3y = h
+        # P4
+        p4x = 0
+        p4y = h - c
     else:
         if 90 <= angle < 180:
-            P1x = h
-            P1y = c
-
-            P2x = h - c
-            P2y = h
-
-            P3x = 0
-            P3y = h - c
-
-            P4x = c
-            P4y = 0
+            # P1
+            p1x = h
+            p1y = c
+            # P2
+            p2x = h - c
+            p2y = h
+            # P3
+            p3x = 0
+            p3y = h - c
+            # P4
+            p4x = c
+            p4y = 0
         else:
             if 180 <= angle < 270:
-                P1x = h - c
-                P1y = h
-
-                P2x = 0
-                P2y = h - c
-
-                P3x = c
-                P3y = 0
-
-                P4x = h
-                P4y = c
+                # P1
+                p1x = h - c
+                p1y = h
+                # P2
+                p2x = 0
+                p2y = h - c
+                # P3
+                p3x = c
+                p3y = 0
+                # P4
+                p4x = h
+                p4y = c
             else:
                 if 270 <= angle < 360:
-                    P1x = h - c
-                    P1y = h
-
-                    P2x = 0
-                    P2y = h - c
-
-                    P3x = c
-                    P3y = 0
-
-                    P4x = h
-                    P4y = c
+                    # P1
+                    p1x = h - c
+                    p1y = h
+                    # P2
+                    p2x = 0
+                    p2y = h - c
+                    # P3
+                    p3x = c
+                    p3y = 0
+                    # P4
+                    p4x = h
+                    p4y = c
                 else:
                     pass
 
     coord_dict = {
-        "P1": [P1x, P1y],
-        "P2": [P2x, P2y],
-        "P3": [P3x, P3y],
-        "P4": [P4x, P4y]
+        "P1": [p1x, p1y],
+        "P2": [p2x, p2y],
+        "P3": [p3x, p3y],
+        "P4": [p4x, p4y]
     }
     return coord_dict
