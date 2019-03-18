@@ -10,7 +10,7 @@ from scipy import ndimage, signal
 import src.config as settings
 from src.convolution import convolution, gaussian_kernel, reduce_size
 from src.helpers import get_class_name_from_file, get_scale_in_percentage, get_video_filenames
-from src.template_matching import subsample_image
+from src.template_matching import fill_black, subsample_image
 
 
 scaling_pyramid_depths = [1, 2, 3, 4]
@@ -125,7 +125,13 @@ def intensity_based_template_matching_training(directory):
     """
     for image in get_video_filenames(directory + "png/"):
         classname = get_class_name_from_file(image)
-        img = cv2.imread(directory + "png/" + image)  # read image from file
+
+        # read the image from file, convert it to gray scale, and replace white pixels with black pixels
+        img = cv2.imread(directory + "png/" + image)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = fill_black(gray)
+
+        # start generating the pyramid of templates
         for p in scaling_pyramid_depths:
             # scale the image by subsampling it p times
             scaled_img = subsample_image(img, p)
@@ -148,7 +154,7 @@ def intensity_based_template_matching_training(directory):
         print("Generated templates for {}".format(classname))
 
     # read an image from one of the binary files
-    # from_binary = np.load("dataset/Training/templates/bridge/rot300-sca6.25%.dat")
+    # from_binary = np.load("dataset/Training/templates/sign/rot60-sca25%.dat")
     # cv2.imshow("from_binary", from_binary)
     # cv2.waitKey(0)
 
@@ -166,7 +172,7 @@ def intensity_based_template_matching_testing(directory):
     img = cv2.imread("dataset/Test/test_10.png", 0)
     img2 = img.copy()
 
-    template = np.load("dataset/Training/templates/airport/rot270-sca50%.dat")
+    template = np.load("dataset/Training/templates/airport/rot90-sca25%.dat")
     w, h = template.shape[::-1]
     img = img2.copy()
 
