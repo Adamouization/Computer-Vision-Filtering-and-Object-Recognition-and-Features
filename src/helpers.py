@@ -1,19 +1,19 @@
 import os
 
 
-def get_video_filenames(directory):
+def get_image_filenames(directory):
     """
     Returns a list containing all the mp4 files in a directory
     :param directory: the directory containing mp4 files
     :return: list of strings
     """
-    list_of_videos = list()
+    list_of_images = list()
     for filename in os.listdir(directory):
         if filename.endswith(".png"):
-            list_of_videos.append(filename)
+            list_of_images.append(filename)
         else:
             print("no png files found in directory '{}'".format(directory))
-    return list_of_videos
+    return list_of_images
 
 
 def get_class_name_from_file(image):
@@ -23,6 +23,15 @@ def get_class_name_from_file(image):
     :return: string with only the filename to use as
     """
     return image[4:][:-4]
+
+
+def get_rotation_from_template(template):
+    """
+    Retrieves the rotation value used for the specified template.
+    :param template: the template
+    :return: the rotation
+    """
+    return template.split('-')[0][3:]
 
 
 def get_scale_in_percentage(pyramid_depth):

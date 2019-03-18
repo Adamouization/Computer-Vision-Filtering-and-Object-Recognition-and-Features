@@ -8,13 +8,13 @@ import numpy as np
 from scipy import ndimage, signal
 
 import src.config as settings
-from src.convolution import convolution, gaussian_kernel, reduce_size
-from src.helpers import get_class_name_from_file, get_scale_in_percentage, get_video_filenames
-from src.template_matching import fill_black, normalize_image, subsample_image, find_rect_corners_with_trigonometry
+from src.convolution import *
+from src.helpers import *
+from src.template_matching import *
 
 
 scaling_pyramid_depths = [1, 2, 3, 4]
-rotations = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0, 360.0]
+rotations = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
 
 
 def main():
@@ -123,7 +123,7 @@ def intensity_based_template_matching_training(directory):
     :param directory: path to the training dataset
     :return: None
     """
-    for image in get_video_filenames(directory + "png/"):
+    for image in get_image_filenames(directory + "png/"):
         classname = get_class_name_from_file(image)
 
         # read the image from file, convert it to gray scale, and replace white pixels with black pixels
@@ -166,9 +166,15 @@ def intensity_based_template_matching_testing(directory):
     :param directory: path to the testing dataset
     :return: None
     """
-    images = get_video_filenames(directory)
-    print("\nTraining image file names:")
-    print(images)
+    # todo get class name, image rotation and image height
+    templates_dir = "dataset/Training/templates"
+    for classname in os.listdir(templates_dir):
+        print(classname)
+        for template in os.listdir(templates_dir + "/" + classname + "/"):
+            print(template)
+            template_rotation = get_rotation_from_template(template)
+            print(template_rotation)
+        print("\n")
 
     img = cv2.imread("dataset/Test/test_10.png", 0)
     img2 = img.copy()
@@ -197,7 +203,6 @@ def intensity_based_template_matching_testing(directory):
     plt.subplot(122), plt.imshow(img, cmap='gray')
     plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
     plt.suptitle('cv2.TM_SQDIFF')
-
     plt.show()
 
 
