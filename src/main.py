@@ -207,12 +207,12 @@ def intensity_based_template_matching_testing(directory):
     top_left = min_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
 
-    # my trigonometry function
+    second_corner_height = find_rect_corners_with_trigonometry(90, h)
 
-    second_corner_height = find_rect_corners_with_trigonometry(100, 10)
-    print(second_corner_height)
-
-    cv2.rectangle(img, top_left, bottom_right, 255, 2)
+    cv2.line(img, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
+    cv2.line(img, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
+    cv2.line(img, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
+    cv2.line(img, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
 
     plt.subplot(121), plt.imshow(res, cmap='gray')
     plt.title('Matching Result'), plt.xticks([]), plt.yticks([])

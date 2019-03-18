@@ -121,65 +121,65 @@ def find_rect_corners_with_trigonometry(angle, img_height):
     if angle < 90:
         # P1
         p1x = c
-        p1y = 0
+        p1y = h
         # P2
         p2x = h
-        p2y = c
+        p2y = h - c
         # P3
         p3x = h - c
-        p3y = h
+        p3y = 0
         # P4
         p4x = 0
-        p4y = h - c
+        p4y = c
     else:
         if 90 <= angle < 180:
             # P1
             p1x = h
-            p1y = c
+            p1y = h - c
             # P2
             p2x = h - c
-            p2y = h
+            p2y = 0
             # P3
             p3x = 0
-            p3y = h - c
+            p3y = c
             # P4
             p4x = c
-            p4y = 0
+            p4y = h
         else:
             if 180 <= angle < 270:
                 # P1
                 p1x = h - c
-                p1y = h
+                p1y = 0
                 # P2
                 p2x = 0
-                p2y = h - c
+                p2y = c
                 # P3
                 p3x = c
-                p3y = 0
+                p3y = h
                 # P4
                 p4x = h
-                p4y = c
+                p4y = h - c
             else:
                 if 270 <= angle < 360:
                     # P1
-                    p1x = h - c
-                    p1y = h
+                    p1x = 0
+                    p1y = c
                     # P2
-                    p2x = 0
-                    p2y = h - c
+                    p2x = c
+                    p2y = h
                     # P3
-                    p3x = c
-                    p3y = 0
+                    p3x = h
+                    p3y = h - c
                     # P4
-                    p4x = h
-                    p4y = c
+                    p4x = h - c
+                    p4y = 0
                 else:
                     pass
 
     coord_dict = {
-        "P1": [p1x, p1y],
-        "P2": [p2x, p2y],
-        "P3": [p3x, p3y],
-        "P4": [p4x, p4y]
+        "P1": [int(p1x), int(p1y)],
+        "P2": [int(p2x), int(p2y)],
+        "P3": [int(p3x), int(p3y)],
+        "P4": [int(p4x), int(p4y)]
     }
     return coord_dict
