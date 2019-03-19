@@ -1,6 +1,7 @@
 import argparse
 import pickle
 
+import cv2
 from matplotlib import pyplot as plt
 from scipy import ndimage
 
@@ -182,44 +183,74 @@ def intensity_based_template_matching_testing(directory):
     :param directory: path to the testing dataset
     :return: None
     """
-    # todo get class name, image rotation and image height
-    templates_dir = "dataset/Training/templates"
-    for classname in os.listdir(templates_dir):
-        print(classname)
-        for template in os.listdir(templates_dir + "/" + classname + "/"):
-            print(template)
-            template_rotation = get_rotation_from_template(template)
-            print(template_rotation)
-        print("\n")
+    # templates_dir = "dataset/Training/templates"
+    # for classname in os.listdir(templates_dir):
+    #     print(classname)
+    #     for template in os.listdir(templates_dir + "/" + classname + "/"):
+    #         print(template)
+    #         template_rotation = get_rotation_from_template(template)
+    #         print(template_rotation)
+    #     print("\n")
 
-    img = cv2.imread("dataset/Test/test_10.png", 0)
+    img = cv2.imread("dataset/Test/test_4.png", 0)
     img2 = img.copy()
 
-    template = np.load("dataset/Training/templates/airport/rot90-sca25%.dat")
+    template = np.load("dataset/Training/templates/sign/rot90-sca25%.dat")
     w, h = template.shape[::-1]
     img = img2.copy()
 
     # Apply template Matching
-    method = eval('cv2.TM_SQDIFF')
-    res = cv2.matchTemplate(img, template, method)  # todo implement
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  # todo implement
+    slide_template_over_image(img, template)
+    # res = cv2.matchTemplate(img, template, method)  # todo implement
+    # min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  # todo implement, need function that returns minlock
 
-    top_left = min_loc
-    bottom_right = (top_left[0] + w, top_left[1] + h)
+    # top_left = min_loc
+    # bottom_right = (top_left[0] + w, top_left[1] + h)
+    #
+    # second_corner_height = find_rect_corners_with_trigonometry(90, h)
+    #
+    # cv2.line(img, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
+    # cv2.line(img, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
+    # cv2.line(img, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
+    # cv2.line(img, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
+    #
+    # plt.subplot(121), plt.imshow(res, cmap='gray')
+    # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+    # plt.subplot(122), plt.imshow(img, cmap='gray')
+    # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+    # plt.suptitle('cv2.TM_SQDIFF')
+    # plt.show()
 
-    second_corner_height = find_rect_corners_with_trigonometry(90, h)
 
-    cv2.line(img, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
-    cv2.line(img, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
-    cv2.line(img, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
-    cv2.line(img, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
+def slide_template_over_image(image, template):
+    img_height = image.shape[1]
+    img_width = image.shape[0]
+    template_height = template.shape[1]
+    template_width = template.shape[0]
 
-    plt.subplot(121), plt.imshow(res, cmap='gray')
-    plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-    plt.subplot(122), plt.imshow(img, cmap='gray')
-    plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-    plt.suptitle('cv2.TM_SQDIFF')
-    plt.show()
+    r = int((template_width - 1) / 2)
+    c = int((template_height - 1) / 2)
+
+    corr_x = img_width - template_width + 1
+    corr_y = img_height - template_height + 1
+    corr = np.zeros((corr_x, corr_y), dtype=np.uint8)
+
+    for i in range(r, img_width - r*2+1, 4):
+        for j in range(c, img_height - c*2+1, 4):
+            nominator = 0
+            denominator_left = 0
+            denominator_right = 0
+            for m in range(-r - 1, r, 4):
+                for n in range(-c - 1, c, 4):
+                    nominator += int(image[i + m, j + n]) * int(template[m, n])
+                    denominator_left += int(image[i + m, j + n])**2
+                    denominator_right += int(template[m, n])**2
+            denominator = np.sqrt(float(denominator_left) * float(denominator_right))
+            if denominator == 0:
+                denominator = 1
+            corr[i - r, j - c] = int(float(nominator)*1000 / denominator)
+    cv2.imshow("corr", corr)
+    cv2.waitKey(0)
 
 
 if __name__ == "__main__":
