@@ -1,7 +1,6 @@
 import argparse
 import pickle
 
-import cv2
 from matplotlib import pyplot as plt
 from scipy import ndimage
 
@@ -83,53 +82,66 @@ def blur_image(directory, image):
     img = cv2.imread(directory + image)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+    filters = {
+        'gaussian_filter': gaussian_kernel(5, 5, 3),
+        'sharpen': np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]]),
+        'horizontal_edge_detector': np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]]),
+        'identity': np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]])
+    }
+
     # Gaussian Blur
-    gaussian_filter = gaussian_kernel(9, 9, 15)
-    custom_conv = perform_custom_convolution(gray, gaussian_filter)
-    library_conv = perform_library_convolution(gray, gaussian_filter)
+    custom_conv = perform_custom_convolution(gray, filters['gaussian_filter'])
+    library_conv = perform_library_convolution(gray, filters['gaussian_filter'])
+    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    plt.subplot(4, 3, 1), plt.imshow(custom_conv, cmap='gray')
-    plt.title("Custom gaussian blur"), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 2), plt.imshow(library_conv, cmap='gray')
+    plt.subplot(4, 3, 1), plt.imshow(custom_conv)
+    plt.title("Gaussian blur"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 2), plt.imshow(library_conv)
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 3), plt.imshow(difference, cmap='gray')
+    plt.subplot(4, 3, 3), plt.imshow(difference)
     plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
     # Uniform Blur
-    uniform_blur_kernel = np.ones((7, 7)) / 49
-    custom_conv = perform_custom_convolution(gray, uniform_blur_kernel)
-    library_conv = perform_library_convolution(gray, uniform_blur_kernel)
+    custom_conv = perform_custom_convolution(gray, filters['sharpen'])
+    library_conv = perform_library_convolution(gray, filters['sharpen'])
+    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    plt.subplot(4, 3, 4), plt.imshow(custom_conv, cmap='gray')
-    plt.title("Custom uniform blur"), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 5), plt.imshow(library_conv, cmap='gray')
+    plt.subplot(4, 3, 4), plt.imshow(custom_conv)
+    plt.title("Sharpen blur"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 5), plt.imshow(library_conv)
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 6), plt.imshow(difference, cmap='gray')
+    plt.subplot(4, 3, 6), plt.imshow(difference)
     plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
     # Vertical Edge
-    vertical_edge_detector = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    custom_conv = perform_custom_convolution(gray, vertical_edge_detector)
-    library_conv = perform_library_convolution(gray, vertical_edge_detector)
+    custom_conv = perform_custom_convolution(gray, filters['horizontal_edge_detector'])
+    library_conv = perform_library_convolution(gray, filters['horizontal_edge_detector'])
+    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    plt.subplot(4, 3, 7), plt.imshow(custom_conv, cmap='gray')
-    plt.title("Custom vertical edge"), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 8), plt.imshow(library_conv, cmap='gray')
+    plt.subplot(4, 3, 7), plt.imshow(custom_conv)
+    plt.title("Horizontal gradient"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 8), plt.imshow(library_conv)
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 9), plt.imshow(difference, cmap='gray')
+    plt.subplot(4, 3, 9), plt.imshow(difference)
     plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    # Horizontal Edge
-    horizontal_edge_detector = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    custom_conv = perform_custom_convolution(gray, horizontal_edge_detector)
-    library_conv = perform_library_convolution(gray, horizontal_edge_detector)
+    # Identity
+    custom_conv = perform_custom_convolution(gray, filters['identity'])
+    library_conv = perform_library_convolution(gray, filters['identity'])
+    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    plt.subplot(4, 3, 10), plt.imshow(custom_conv, cmap='gray')
-    plt.title("Custom horizontal edge"), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 11), plt.imshow(library_conv, cmap='gray')
+    plt.subplot(4, 3, 10), plt.imshow(custom_conv)
+    plt.title("Identity"), plt.xticks([]), plt.yticks([])
+    plt.subplot(4, 3, 11), plt.imshow(library_conv)
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
-    plt.subplot(4, 3, 12), plt.imshow(difference, cmap='gray')
+    plt.subplot(4, 3, 12), plt.imshow(difference)
     plt.title('Difference'), plt.xticks([]), plt.yticks([])
+
+    # print("Difference={}".format(sum(library_conv) - sum(custom_conv)))
+    # cv2.imshow("custom_conv", custom_conv)
+    # cv2.imshow("library_conv", library_conv)
+    # cv2.imshow("difference", difference)
+    # cv2.waitKey(0)
 
     plt.show()
 
