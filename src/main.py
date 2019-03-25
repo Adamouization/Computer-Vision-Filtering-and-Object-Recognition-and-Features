@@ -181,10 +181,8 @@ def intensity_based_template_matching_training(directory):
                 file.close()
         print("Generated templates for {}".format(classname))
 
-    # read an image from one of the binary files
-    # from_binary = np.load("dataset/Training/templates/sign/rot60-sca25%.dat")
-    # cv2.imshow("from_binary", from_binary)
-    # cv2.waitKey(0)
+    if settings.debug:
+        display_template_from_binary("dataset/Training/templates/sign/rot60-sca25%.dat")
 
 
 def intensity_based_template_matching_testing(directory):

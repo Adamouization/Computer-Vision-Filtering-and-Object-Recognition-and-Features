@@ -1,5 +1,8 @@
 import os
 
+import cv2
+import numpy as np
+
 
 def get_image_filenames(directory):
     """
@@ -53,3 +56,14 @@ def get_scale_in_percentage(pyramid_depth):
     elif pyramid_depth == 5:
         return "3.125%"
     return "0%"
+
+
+def display_template_from_binary(path):
+    """
+    Read an image from one of the binary files
+    :param template:
+    :return:
+    """
+    from_binary = np.load(path)
+    cv2.imshow("from_binary", from_binary)
+    cv2.waitKey(0)
