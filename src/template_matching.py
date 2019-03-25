@@ -183,3 +183,193 @@ def find_rect_corners_with_trigonometry(angle, img_height):
         "P4": [int(p4x), int(p4y)]
     }
     return coord_dict
+
+
+def correlation_for_loops(image, template):
+    img_height = image.shape[1]
+    img_width = image.shape[0]
+    template_height = template.shape[1]
+    template_width = template.shape[0]
+
+    r = int((template_width - 1) / 2)
+    c = int((template_height - 1) / 2)
+
+    corr_x = img_width - template_width + 1
+    corr_y = img_height - template_height + 1
+
+    end_range_x = img_width - r + 1
+    end_range_y = img_height - r + 1
+
+    times_denom = 0
+    skip = 8
+    skipT = 16
+    corr = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.uint8)
+    corr_float = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.float)
+
+    a = [[8, 2], [2, 1]]
+    b = [[4, 1], [2, 2]]
+
+    c = np.divide(a, b)
+    print("c={}", c)
+
+    corr = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.uint8)
+    corr_float = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.float)
+
+    for i in range(r + 1, end_range_x - 1, skip):
+        for j in range(c + 1, end_range_y - 1, skip):
+            numerator = 0
+            denominator_left = 0
+            denominator_right = 0
+            for m in range(-r, r, skipT):
+                for n in range(-c, c, skipT):
+                    numerator += float(image[i + m, j + n]) * float(template[m + r, n + c])
+                    denominator_left += (image[i + m, j + n]) ** 2
+                    denominator_right += (template[m + r, n + c]) ** 2
+
+            denominator = np.sqrt(float(denominator_left) * float(denominator_right))
+
+            if denominator == 0:
+                numerator = 0
+                denominator = 1
+                times_denom = times_denom + 1
+            corr_float[int((i - r) / skip), int((j - c) / skip)] = float(float(numerator) / float(denominator))
+
+    max_val = 0
+    for i in range(r + 1, end_range_x - 1, skip):
+        for j in range(c + 1, end_range_y - 1, skip):
+            if corr_float[int((i - r) / skip), int((j - c) / skip)] > max_val:
+                max_val = corr_float[int((i - r) / skip), int((j - c) / skip)]
+
+    for i in range(r + 1, end_range_x - 1, skip):
+        for j in range(c + 1, end_range_y - 1, skip):
+            corr[int((i - r) / skip), int((j - c) / skip)] = int(
+                corr_float[int((i - r) / skip), int((j - c) / skip)] / max_val * 255)
+
+            # corr_float[int(float(i-r)/skip), int(float(j-c)/skip)] = image[i, j]
+
+    x_max = 0
+    y_max = 0
+    for i in range(r + 1, end_range_x - 1, skip):
+        for j in range(c + 1, end_range_y - 1, skip):
+            if corr_float[int((i - r) / skip), int((j - c) / skip)] == max_val:
+                x_max = int((i - r) / skip)
+                y_max = int((j - c) / skip)
+
+    print(x_max * skip)
+    print(y_max * skip)
+    w, h = template.shape[::-1]
+    top_left = (int(y_max * skip), int(x_max * skip))
+
+    # draw rectangles
+    second_corner_height = find_rect_corners_with_trigonometry(60, h)
+    cv2.line(image, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+             (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
+    cv2.line(image, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+             (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
+    cv2.line(image, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+             (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
+    cv2.line(image, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+             (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
+
+    print("times denominator = {}".format(times_denom))
+    cv2.imshow("img", image)
+    cv2.imshow("corr", corr)
+    cv2.waitKey(0)
+
+
+def correlation_fft(image, template):
+    img_height = image.shape[1]
+    img_width = image.shape[0]
+    template_height = template.shape[1]
+    template_width = template.shape[0]
+
+    r = int((template_width - 1) / 2)
+    c = int((template_height - 1) / 2)
+
+    corr_x = img_width - template_width + 1
+    corr_y = img_height - template_height + 1
+
+    end_range_x = img_width - r + 1
+    end_range_y = img_height - r + 1
+
+    times_denom = 0
+    skip = 8
+    skipT = 16
+    corr = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.uint8)
+    corr_float = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.float)
+
+    a = [[8, 2], [2, 1]]
+    b = [[4, 1], [2, 2]]
+
+    c = np.divide(a, b)
+    print("c={}", c)
+
+    corr = np.zeros((int(img_width), int(img_height)), dtype=np.uint8)
+    pad_x = image.shape[0] - template.shape[0]
+    pad_y = image.shape[1] - template.shape[1]
+    print("template {}, {}".format(template.shape[0], template.shape[1]))
+    print("pad_x{}, pad_y{}".format(pad_x, pad_y))
+    pad_right = np.zeros((template.shape[0], pad_y))
+    pad_bot = np.zeros((pad_x, pad_y + template.shape[0]))
+    template_mod = template
+    template_mod = np.append(template, pad_right, axis=1)
+    print("fft_template1:{}, {}".format(template_mod.shape[0], template_mod.shape[1]))
+    print("pad_right.shape[0]:{}".format(pad_right.shape[0]))
+    template_mod = np.append(template_mod, pad_bot, axis=0)
+    print("fft_template: {}, {}".format(template_mod.shape[0], template_mod.shape[1]))
+
+    fft_image = np.fft.fft2(image)
+    fft_template = np.fft.fft2(template_mod)
+
+    corr_float = fft_image * fft_template
+    denominator_left = fft_image * fft_image
+    denominator_right = fft_template * fft_template
+
+    corr_float = np.fft.ifft2(corr_float)
+    denominator_left = np.fft.ifft2(denominator_left)
+    denominator_right = np.fft.ifft2(denominator_right)
+    # denominator = np.fft.ifft2(denominator)
+    denominator = np.multiply(denominator_left, denominator_right)
+    denominator = np.sqrt(denominator)
+
+    # denominator = denominator + 1
+    corr_float = np.multiply(corr_float, 1 / denominator)
+
+    print("FFFFFFFFF: {}, {}".format(corr_float.shape[0], corr_float.shape[1]))
+    max_val = 0
+    for i in range(1, corr_float.shape[0]):
+        for j in range(1, corr_float.shape[1]):
+            if corr_float[i, j] > max_val:
+                max_val = corr_float[i, j]
+
+    for i in range(1, corr_float.shape[0]):
+        for j in range(1, corr_float.shape[1]):
+            corr[i, j] = int((corr_float[i, j]) / max_val * 255)
+    x_max = 0
+    y_max = 0
+    # corr_float[int(float(i-r)/skip), int(float(j-c)/skip)] = image[i, j]
+    for i in range(1, corr_float.shape[0]):
+        for j in range(1, corr_float.shape[1]):
+            if corr_float[i, j] == max_val:
+                x_max = i
+                y_max = j
+    print(x_max)
+    print(y_max)
+    w, h = template.shape[::-1]
+    top_left = (int(y_max), int(x_max))
+
+    # draw rectangles
+    second_corner_height = find_rect_corners_with_trigonometry(60, h)
+    cv2.line(image, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+             (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
+    cv2.line(image, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+             (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
+    cv2.line(image, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+             (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
+    cv2.line(image, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+             (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
+
+    print("times denominator = {}".format(times_denom))
+    cv2.imshow("img", image)
+    cv2.imshow("corr", corr)
+    cv2.waitKey(0)

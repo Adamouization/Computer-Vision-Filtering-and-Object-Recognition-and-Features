@@ -9,8 +9,6 @@ from src.convolution import *
 from src.helpers import *
 from src.template_matching import *
 
-from numpy.linalg import inv
-
 
 scaling_pyramid_depths = [1, 2, 3, 4]
 rotations = [0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
@@ -191,7 +189,7 @@ def intensity_based_template_matching_training(directory):
 
 def intensity_based_template_matching_testing(directory):
     """
-    Tests the trained model with 20 test images.
+    Tests the trained model with one of the 20 test images.
     :param directory: path to the testing dataset
     :return: None
     """
@@ -205,52 +203,64 @@ def intensity_based_template_matching_testing(directory):
     #     print("\n")
 
     img = cv2.imread("dataset/Test/test_4.png", 0)
-    #img = normalize_image(img)
+    # img = normalize_image(img)
 
-    #template = cv2.imread("dataset/Training/png/001-lighthouseTEST.png", 0)
     template = np.load("dataset/Training/templates/lighthouse/rot60-sca25%.dat")
+    # template = cv2.imread("dataset/Training/png/001-lighthouseTEST.png", 0)
     w, h = template.shape[::-1]
 
+    # show images
+    if settings.debug:
+        cv2.imshow("from_binary", template)
+        cv2.imshow("img", img)
+        cv2.waitKey(0)
 
+    # Apply manual template matching
+    correlation_for_loops(img, template)
+    correlation_fft(img, template)
 
+    # Apply library template matching
+    method = eval('cv2.TM_CCORR_NORMED')  # cv2.TM_SQDIFF_NORMED
+    res = cv2.matchTemplate(img, template, method)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-
-    cv2.imshow("from_binary", template)
-    #cv2.imshow("img", img)
-    #cv2.waitKey(0)
-
-    # Apply template Matching
-    # Apply template Matching
-    # Apply template Matching
-    # Apply template Matching
-    slide_template_over_image(img, template)
-    # Apply template Matching
-    # Apply template Matching
-    # Apply template Matching
-    # Apply template Matching
-
-    method = eval('cv2.TM_CCORR_NORMED')
-
-    #method = eval('cv2.TM_SQDIFF_NORMED')
-    res = cv2.matchTemplate(img, template, method)  # todo implement
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  # todo implement, need function that returns minlock
-
-    print(max_val)
-    print(min_val)
-    print(max_loc)
-    print(min_loc)
+    if settings.debug:
+        print("max_val={}".format(max_val))
+        print("min_val={}".format(min_val))
+        print("max_loc={}".format(max_loc))
+        print("min_loc={}".format(min_loc))
 
     top_left = max_loc
     bottom_right = (top_left[0] + w, top_left[1] + h)
-    #
     second_corner_height = find_rect_corners_with_trigonometry(60, h)
-    #
-    cv2.line(img, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
-    cv2.line(img, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
-    cv2.line(img, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
-    cv2.line(img, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
-    #
 
+    # draw the rectangle
+    cv2.line(
+        img,
+        pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+        pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+        color=250,
+        thickness=6)
+    cv2.line(
+        img,
+        pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+        pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+        color=200,
+        thickness=6)
+    cv2.line(
+        img,
+        pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+        pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+        color=150,
+        thickness=6)
+    cv2.line(
+        img,
+        pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+        pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+        color=100,
+        thickness=6)
+
+    # plot results
     cv2.rectangle(img, top_left, bottom_right, 255, 2)
     plt.subplot(121), plt.imshow(res, cmap='gray')
     plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
@@ -258,205 +268,6 @@ def intensity_based_template_matching_testing(directory):
     plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
     plt.suptitle('res')
     plt.show()
-
-
-def slide_template_over_image(image, template):
-    img_height = image.shape[1]
-    img_width = image.shape[0]
-    template_height = template.shape[1]
-    template_width = template.shape[0]
-
-    r = int((template_width - 1) / 2)
-    c = int((template_height - 1) / 2)
-
-    corr_x = img_width - template_width + 1
-    corr_y = img_height - template_height + 1
-
-    end_range_x = img_width - r + 1
-    end_range_y = img_height - r + 1
-
-    hello = 0
-    skip = 8
-    skipT = 16
-    corr = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.uint8)
-    corr_float = np.zeros((int((end_range_x - r) / skip + 1), int((end_range_y - c) / skip + 1)), dtype=np.float)
-
-
-    a = [[8, 2], [2, 1]]
-    b = [[4, 1], [2, 2]]
-
-    c=np.divide(a, b)
-    print("c")
-    print(c)
-
-
-    fft="yes"
-    if fft == "no":
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-
-        corr = np.zeros((int((end_range_x-r)/skip+1), int((end_range_y-c)/skip+1)), dtype=np.uint8)
-        corr_float = np.zeros((int((end_range_x-r)/skip+1), int((end_range_y-c)/skip+1)), dtype=np.float)
-
-        for i in range(r + 1, end_range_x - 1, skip):
-            for j in range(c + 1, end_range_y - 1, skip):
-                numerator = 0
-                denominator_left = 0
-                denominator_right = 0
-                for m in range(-r, r, skipT):
-                    for n in range(-c, c, skipT):
-                        numerator += float(image[i + m, j + n]) * float(template[m + r, n + c])
-                        denominator_left += (image[i + m, j + n]) ** 2
-                        denominator_right += (template[m + r, n + c]) ** 2
-
-                denominator = np.sqrt(float(denominator_left) * float(denominator_right))
-
-                if denominator == 0:
-                    numerator = 0
-                    denominator = 1
-                    hello = hello + 1
-                corr_float[int((i - r) / skip), int((j - c) / skip)] = float(float(numerator) / float(denominator))
-
-        max_val = 0
-        for i in range(r + 1, end_range_x - 1, skip):
-            for j in range(c + 1, end_range_y - 1, skip):
-                if corr_float[int((i - r) / skip), int((j - c) / skip)] > max_val:
-                    max_val = corr_float[int((i - r) / skip), int((j - c) / skip)]
-
-        for i in range(r + 1, end_range_x - 1, skip):
-            for j in range(c + 1, end_range_y - 1, skip):
-                corr[int((i - r) / skip), int((j - c) / skip)] = int(
-                    corr_float[int((i - r) / skip), int((j - c) / skip)] / max_val * 255)
-
-                # corr_float[int(float(i-r)/skip), int(float(j-c)/skip)] = image[i, j]
-
-        x_max = 0
-        y_max = 0
-        for i in range(r + 1, end_range_x - 1, skip):
-            for j in range(c + 1, end_range_y - 1, skip):
-                if corr_float[int((i - r) / skip), int((j - c) / skip)] == max_val:
-                    x_max = int((i - r) / skip)
-                    y_max = int((j - c) / skip)
-
-        print(x_max * skip)
-        print(y_max * skip)
-        w, h = template.shape[::-1]
-        top_left = (int(y_max * skip), int(x_max * skip))
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-        ###  old method  ###
-
-    else:
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        corr = np.zeros((int(img_width), int(img_height)), dtype=np.uint8)
-        pad_x = image.shape[0] - template.shape[0]
-        pad_y = image.shape[1] - template.shape[1]
-        print("template {}, {}".format(template.shape[0], template.shape[1]))
-        print("pad_x{}, pad_y{}".format(pad_x, pad_y))
-        pad_right = np.zeros((template.shape[0], pad_y))
-        pad_bot = np.zeros((pad_x, pad_y+template.shape[0]))
-        template_mod=template
-        template_mod = np.append(template, pad_right, axis=1)
-        print("fft_template1:{}, {}".format(template_mod.shape[0], template_mod.shape[1]))
-        print("pad_right.shape[0]:{}".format(pad_right.shape[0]))
-        template_mod = np.append(template_mod, pad_bot, axis=0)
-        print("fft_template: {}, {}".format(template_mod.shape[0], template_mod.shape[1]))
-        fft_image = np.fft.fft2(image)
-        fft_template = np.fft.fft2(template_mod)
-
-        corr_float = fft_image * fft_template
-        denominator_left = fft_image * fft_image
-        denominator_right = fft_template * fft_template
-
-        denominator = np.multiply(denominator_left, denominator_right)
-        corr_float = np.fft.ifft2(corr_float)
-        #denominator_left = np.fft.ifft2(denominator_left)
-        #denominator_right = np.fft.ifft2(denominator_right)
-        denominator = np.fft.ifft2(denominator)
-
-        denominator = np.sqrt(denominator)
-
-        #denominator =denominator+1
-        corr_float = np.multiply(corr_float, 1/denominator)
-        corr_float = 1/denominator
-
-        print("FFFFFFFFF: {}, {}".format(corr_float.shape[0], corr_float.shape[1]))
-        max_val = 0
-        for i in range(1, corr_float.shape[0]):
-            for j in range(1, corr_float.shape[1]):
-                if corr_float[i, j] > max_val:
-                    max_val = corr_float[i, j]
-
-
-        for i in range(1, corr_float.shape[0]):
-            for j in range(1, corr_float.shape[1]):
-                corr[i, j] = int((corr_float[i, j]) / max_val * 255)
-        x_max = 0
-        y_max = 0
-                #corr_float[int(float(i-r)/skip), int(float(j-c)/skip)] = image[i, j]
-        for i in range(1, corr_float.shape[0]):
-            for j in range(1, corr_float.shape[1]):
-                if corr_float[i, j] == max_val:
-                    x_max = i
-                    y_max = j
-        print(x_max)
-        print(y_max)
-        w, h = template.shape[::-1]
-        top_left = (int(y_max), int(x_max))
-
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-        ###     FFT    method     ###
-    
-
-
-
-
-
-
-
-
-    #
-    second_corner_height = find_rect_corners_with_trigonometry(60, h)
-    #
-    cv2.line(image, (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), 250, 6)
-    cv2.line(image, (second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]), (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), 200, 6)
-    cv2.line(image, (second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]), (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), 150, 6)
-    cv2.line(image, (second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]), (second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]), 100, 6)
-
-    cv2.imshow("img", image)
-
-
-    print("times denominator")
-    print(hello)
-    cv2.imshow("corr", corr)
-    cv2.waitKey(0)
-
-    '''
-    
-    
-            print(int((i) / skip))
-            print(int((j) / skip))
-            print(int((i)))
-            print(int((j)))
-            print(image[i, j])
-
-
-            print("-----")
-            
-            
-    '''
 
 
 def sift_training(directory):
