@@ -198,6 +198,25 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     for classname in os.listdir(templates_dir):
         print(classname)
 
+        max_rot_for_scale = {
+            '6.25': {
+                'rot': "",
+                'val': 0
+            },
+            '12.5': {
+                'rot': "",
+                'val': 0
+            },
+            '25': {
+                'rot': "",
+                'val': 0
+            },
+            '50': {
+                'rot': "",
+                'val': 0
+            }
+        }
+
         cur_vals = {
             'class_name': " ",
             'template_name': " ",
@@ -227,6 +246,32 @@ def intensity_based_template_matching_testing(directory, templates_dir):
             res = cv2.matchTemplate(testing_img, template, method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
+            if settings.debug:
+                scale = get_scaling_from_template(t)
+                if scale == '6' and max_val > max_rot_for_scale['6.25']['val']:
+                    max_rot_for_scale['6.25']['rot'] = get_rotation_from_template(t)
+                    max_rot_for_scale['6.25']['val'] = max_val * 0.5
+                elif scale == '12' and max_val > max_rot_for_scale['12.5']['val']:
+                    max_rot_for_scale['12.5']['rot'] = get_rotation_from_template(t)
+                    max_rot_for_scale['12.5']['val'] = max_val * 0.6
+                elif scale == '25' and max_val > max_rot_for_scale['25']['val']:
+                    max_rot_for_scale['25']['rot'] = get_rotation_from_template(t)
+                    max_rot_for_scale['25']['val'] = max_val * 0.8
+                elif scale == '50' and max_val > max_rot_for_scale['50']['val']:
+                    max_rot_for_scale['50']['rot'] = get_rotation_from_template(t)
+                    max_rot_for_scale['50']['val'] = max_val * 1
+
+            # penalties for smaller images
+            scale = get_scaling_from_template(t)
+            if scale == '6':
+                max_val = max_val * 0.6
+            elif scale == '12':
+                max_val = max_val * 0.7
+            elif scale == '25':
+                max_val = max_val * 0.8
+            elif scale == '50':
+                max_val = max_val * 0.8
+
             if max_val > cur_vals['max_val']:
                 cur_vals = {
                     'class_name': classname,
@@ -236,7 +281,8 @@ def intensity_based_template_matching_testing(directory, templates_dir):
                     'min_loc': min_loc,
                     'max_loc': max_loc,
                     'h': h,
-                    'w': w
+                    'w': w,
+                    'rotation': get_rotation_from_template(t)
                 }
 
             if settings.debug:
@@ -252,18 +298,14 @@ def intensity_based_template_matching_testing(directory, templates_dir):
                 plt.suptitle('res')
                 plt.show()
 
-            # template_rotation = get_rotation_from_template(template)
-            # print(template_rotation)
-
-        # todo get the point for the chosen class
-
         max_loc = cur_vals['max_loc']
         width = cur_vals['w']
         height = cur_vals['h']
+        rotation = cur_vals['rotation']
 
         top_left = max_loc
         bottom_right = (top_left[0] + width, top_left[1] + height)
-        second_corner_height = find_rect_corners_with_trigonometry(60, height)
+        second_corner_height = find_rect_corners_with_trigonometry(rotation, height)
 
         # draw the rectangle
         cv2.line(
@@ -293,6 +335,16 @@ def intensity_based_template_matching_testing(directory, templates_dir):
             pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
             color=100,
             thickness=2
+        )
+
+        cv2.putText(
+            img=testing_img,
+            text=classname,
+            org=top_left,
+            fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+            fontScale=1,
+            color=(255, 255, 255),
+            lineType=2
         )
 
     cv2.imshow("img", testing_img)

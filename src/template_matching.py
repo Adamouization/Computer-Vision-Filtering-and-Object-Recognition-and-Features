@@ -84,6 +84,8 @@ def find_rect_corners_with_trigonometry(angle, img_height):
     :param img_height: the height of the image that is going to be surrounded by the rectangle
     :return: coord_dict: dictionnary with the 4 (x,y) coordinates required to draw a rectangle around an object
     """
+    angle = int(angle)
+
     if angle < 90:
         alpha = np.deg2rad(angle)
     else:

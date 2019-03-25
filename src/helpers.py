@@ -1,4 +1,5 @@
 import os
+import re
 
 import cv2
 import numpy as np
@@ -35,6 +36,15 @@ def get_rotation_from_template(template):
     :return: the rotation
     """
     return template.split('-')[0][3:]
+
+
+def get_scaling_from_template(template):
+    """
+    Retrieves the scaling value used for the specified template.
+    :param template: the template
+    :return: the scale
+    """
+    return re.search("(?<=sca)[^.|%]*", template).group(0)
 
 
 def get_scale_in_percentage(pyramid_depth):
