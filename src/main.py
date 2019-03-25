@@ -268,9 +268,9 @@ def intensity_based_template_matching_testing(directory, templates_dir):
             elif scale == '12':
                 max_val = max_val * 0.7
             elif scale == '25':
-                max_val = max_val * 0.8
+                max_val = max_val * 0.7
             elif scale == '50':
-                max_val = max_val * 0.8
+                max_val = max_val * 0.7
 
             if max_val > cur_vals['max_val']:
                 cur_vals = {
@@ -298,54 +298,56 @@ def intensity_based_template_matching_testing(directory, templates_dir):
                 plt.suptitle('res')
                 plt.show()
 
-        max_loc = cur_vals['max_loc']
-        width = cur_vals['w']
-        height = cur_vals['h']
-        rotation = cur_vals['rotation']
+        print(cur_vals['max_val'])
+        if cur_vals['max_val'] > 0.54:  # threshold to ignore low values
+            max_loc = cur_vals['max_loc']
+            width = cur_vals['w']
+            height = cur_vals['h']
+            rotation = cur_vals['rotation']
 
-        top_left = max_loc
-        bottom_right = (top_left[0] + width, top_left[1] + height)
-        second_corner_height = find_rect_corners_with_trigonometry(rotation, height)
+            top_left = max_loc
+            bottom_right = (top_left[0] + width, top_left[1] + height)
+            second_corner_height = find_rect_corners_with_trigonometry(rotation, height)
 
-        # draw the rectangle
-        cv2.line(
-            img=testing_img,
-            pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
-            pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
-            color=250,
-            thickness=2
-        )
-        cv2.line(
-            img=testing_img,
-            pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
-            pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
-            color=200,
-            thickness=2
-        )
-        cv2.line(
-            img=testing_img,
-            pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
-            pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
-            color=150,
-            thickness=2
-        )
-        cv2.line(
-            img=testing_img,
-            pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
-            pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
-            color=100,
-            thickness=2
-        )
+            # draw the rectangle
+            cv2.line(
+                img=testing_img,
+                pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+                pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+                color=250,
+                thickness=2
+            )
+            cv2.line(
+                img=testing_img,
+                pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+                pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+                color=200,
+                thickness=2
+            )
+            cv2.line(
+                img=testing_img,
+                pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+                pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+                color=150,
+                thickness=2
+            )
+            cv2.line(
+                img=testing_img,
+                pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+                pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+                color=100,
+                thickness=2
+            )
 
-        cv2.putText(
-            img=testing_img,
-            text=classname,
-            org=top_left,
-            fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
-            fontScale=1,
-            color=(255, 255, 255),
-            lineType=2
-        )
+            cv2.putText(
+                img=testing_img,
+                text=classname,
+                org=top_left,
+                fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+                fontScale=1,
+                color=(255, 255, 255),
+                lineType=2
+            )
 
     cv2.imshow("img", testing_img)
     cv2.waitKey(0)
