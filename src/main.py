@@ -60,11 +60,9 @@ def main():
 
     elif settings.model_type == 'sift':
         if settings.mode == 'train':
-            # todo Train the sift-based template matching model
-            pass
+            sift_training(training_dataset_directory)
         elif settings.mode == 'test':
-            # todo Test the sift-based template matching model
-            pass
+            sift_testing(testing_dataset_directory)
         else:
             print("Invalid mode chosen. Choose from 'train' or 'test'")
             exit(0)
@@ -459,6 +457,16 @@ def slide_template_over_image(image, template):
             
             
     '''
+
+
+def sift_training(directory):
+    pass
+    # todo sift training
+
+
+def sift_testing(directory):
+    pass
+    # todo sift testing
 
 
 if __name__ == "__main__":
