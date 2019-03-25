@@ -51,7 +51,7 @@ def main():
             intensity_based_template_matching_training(training_dataset_directory)
         elif settings.mode == 'test':
             # Test the intensity-based template matching model
-            intensity_based_template_matching_testing(testing_dataset_directory)
+            intensity_based_template_matching_testing(testing_dataset_directory, "dataset/Training/templates")
         else:
             print("Invalid mode chosen. Choose from 'train' or 'test'")
             exit(0)
@@ -185,87 +185,118 @@ def intensity_based_template_matching_training(directory):
         display_template_from_binary("dataset/Training/templates/sign/rot60-sca25%.dat")
 
 
-def intensity_based_template_matching_testing(directory):
+def intensity_based_template_matching_testing(directory, templates_dir):
     """
     Tests the trained model with one of the 20 test images.
+    :param templates_dir: path to the templates
     :param directory: path to the testing dataset
     :return: None
     """
-    # templates_dir = "dataset/Training/templates"
-    # for classname in os.listdir(templates_dir):
-    #     print(classname)
-    #     for template in os.listdir(templates_dir + "/" + classname + "/"):
-    #         print(template)
-    #         template_rotation = get_rotation_from_template(template)
-    #         print(template_rotation)
-    #     print("\n")
+    testing_img = cv2.imread("dataset/Test/test_5.png", 0)
+    # testing_img = normalize_image(testing_img)
 
-    img = cv2.imread("dataset/Test/test_4.png", 0)
-    # img = normalize_image(img)
+    for classname in os.listdir(templates_dir):
+        print(classname)
 
-    template = np.load("dataset/Training/templates/lighthouse/rot60-sca25%.dat")
-    # template = cv2.imread("dataset/Training/png/001-lighthouseTEST.png", 0)
-    w, h = template.shape[::-1]
+        cur_vals = {
+            'class_name': " ",
+            'template_name': " ",
+            'min_val': 0.0,
+            'max_val': 0.0,
+            'min_loc': 0.0,
+            'max_loc': 0.0
+        }
 
-    # show images
-    if settings.debug:
-        cv2.imshow("from_binary", template)
-        cv2.imshow("img", img)
-        cv2.waitKey(0)
+        for t in os.listdir(templates_dir + "/" + classname + "/"):
+            # print(templates_dir + template)
+            template = np.load(templates_dir + "/" + classname + "/" + t)
+            w, h = template.shape[::-1]
 
-    # Apply manual template matching
-    correlation_for_loops(img, template)
-    correlation_fft(img, template)
+            # show images
+            if settings.debug:
+                cv2.imshow("from_binary", template)
+                cv2.imshow("testing_img", testing_img)
+                cv2.waitKey(0)
 
-    # Apply library template matching
-    method = eval('cv2.TM_CCORR_NORMED')  # cv2.TM_SQDIFF_NORMED
-    res = cv2.matchTemplate(img, template, method)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            # Apply manual template matching
+            # correlation_for_loops(testing_img, template)
+            # correlation_fft(testing_img, template)
 
-    if settings.debug:
-        print("max_val={}".format(max_val))
-        print("min_val={}".format(min_val))
-        print("max_loc={}".format(max_loc))
-        print("min_loc={}".format(min_loc))
+            # Apply library template matching
+            method = eval('cv2.TM_CCORR_NORMED')  # cv2.TM_SQDIFF_NORMED
+            res = cv2.matchTemplate(testing_img, template, method)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-    top_left = max_loc
-    bottom_right = (top_left[0] + w, top_left[1] + h)
-    second_corner_height = find_rect_corners_with_trigonometry(60, h)
+            if max_val > cur_vals['max_val']:
+                cur_vals = {
+                    'class_name': classname,
+                    'template_name': t,
+                    'min_val': min_val,
+                    'max_val': max_val,
+                    'min_loc': min_loc,
+                    'max_loc': max_loc,
+                    'h': h,
+                    'w': w
+                }
 
-    # draw the rectangle
-    cv2.line(
-        img,
-        pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
-        pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
-        color=250,
-        thickness=6)
-    cv2.line(
-        img,
-        pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
-        pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
-        color=200,
-        thickness=6)
-    cv2.line(
-        img,
-        pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
-        pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
-        color=150,
-        thickness=6)
-    cv2.line(
-        img,
-        pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
-        pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
-        color=100,
-        thickness=6)
+            if settings.debug:
+                print("max_val={}".format(max_val))
+                print("min_val={}".format(min_val))
+                print("max_loc={}".format(max_loc))
+                print("min_loc={}".format(min_loc))
+                cv2.rectangle(testing_img, max_loc, (max_loc[0] + w, max_loc[1] + h), 255, 2)
+                plt.subplot(121), plt.imshow(res, cmap='gray')
+                plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+                plt.subplot(122), plt.imshow(testing_img, cmap='gray')
+                plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+                plt.suptitle('res')
+                plt.show()
 
-    # plot results
-    cv2.rectangle(img, top_left, bottom_right, 255, 2)
-    plt.subplot(121), plt.imshow(res, cmap='gray')
-    plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-    plt.subplot(122), plt.imshow(img, cmap='gray')
-    plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-    plt.suptitle('res')
-    plt.show()
+            # template_rotation = get_rotation_from_template(template)
+            # print(template_rotation)
+
+        # todo get the point for the chosen class
+
+        max_loc = cur_vals['max_loc']
+        width = cur_vals['w']
+        height = cur_vals['h']
+
+        top_left = max_loc
+        bottom_right = (top_left[0] + width, top_left[1] + height)
+        second_corner_height = find_rect_corners_with_trigonometry(60, height)
+
+        # draw the rectangle
+        cv2.line(
+            img=testing_img,
+            pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+            pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+            color=250,
+            thickness=2
+        )
+        cv2.line(
+            img=testing_img,
+            pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+            pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+            color=200,
+            thickness=2
+        )
+        cv2.line(
+            img=testing_img,
+            pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+            pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+            color=150,
+            thickness=2
+        )
+        cv2.line(
+            img=testing_img,
+            pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+            pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+            color=100,
+            thickness=2
+        )
+
+    cv2.imshow("img", testing_img)
+    cv2.waitKey(0)
 
 
 def sift_training(directory):
