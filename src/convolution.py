@@ -1,7 +1,7 @@
 import math
 
-import cv2
 import numpy as np
+from scipy import ndimage
 
 
 def convolution(image, kernel):
@@ -71,9 +71,11 @@ def extended_convolution(image, kernel):
     r = int((kernel_width - 1) / 2)
     c = int((kernel_height - 1) / 2)
 
-    extended_img = np.pad(image, [r, c], mode="edge")
+    extended_img = np.pad(image, [r, c], mode="constant", constant_values=0)
     extended_img_height = extended_img.shape[0]
     extended_img_width = extended_img.shape[1]
+
+    kernel = np.flipud(np.fliplr(kernel))  # flip the kernel horizontally and vertically
 
     for i in range(r, extended_img_width - r):
         for j in range(c, extended_img_height - c):
@@ -86,30 +88,6 @@ def extended_convolution(image, kernel):
     return output_img
 
 
-def new_extended_convolution(image, kernel):
-    img_height = image.shape[0]
-    img_width = image.shape[1]
-
-    kernel_height = kernel.shape[0]
-    kernel_width = kernel.shape[1]
-
-    pad = math.floor(kernel_height / 2)
-    extended_img = np.pad(image, [pad, pad], mode="edge")
-    extended_img_height = extended_img.shape[0]
-    extended_img_width = extended_img.shape[1]
-
-    output_img = np.zeros((img_width, img_height))
-    for i in range(0, img_width):
-        for j in range(0, img_height):
-            accumulator = 0
-            for k in range(0, kernel_width):
-                for l in range(0, kernel_height):
-                    accumulator = accumulator + (kernel[k, l] * extended_img[i + k - 1, j + l - 1])
-            output_img[i, j] = accumulator
-
-    return output_img
-
-
 def perform_custom_convolution(img, kernel):
     """
     Performs convolution using the custom convolution function written in this module.
@@ -117,7 +95,7 @@ def perform_custom_convolution(img, kernel):
     :param kernel: the kernel to convolute with
     :return: the convoluted image
     """
-    conv_img = new_extended_convolution(img, kernel)
+    conv_img = extended_convolution(img, kernel)
     conv_img_smaller = reduce_size(conv_img, kernel)
     conv_img_smaller = reduce_size(conv_img_smaller, kernel)
     return conv_img
@@ -130,8 +108,8 @@ def perform_library_convolution(img, kernel):
     :param kernel: the kernel to convolute with
     :return: the convoluted image
     """
-    library_conv = cv2.filter2D(img, -1, kernel)
-    # library_conv = library_conv.astype(np.uint8)
+    library_conv = ndimage.convolve(img, kernel, mode='constant', cval=0.0)
+    library_conv = library_conv.astype(np.uint8)
     # library_conv_smaller = reduce_size(library_conv, kernel)
     # library_conv_smaller = reduce_size(library_conv_smaller, kernel)
     return library_conv
