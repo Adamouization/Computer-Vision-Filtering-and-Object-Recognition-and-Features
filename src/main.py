@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import src.config as settings
 from src.convolution import *
 from src.helpers import *
+from src.sift import *
 from src.template_matching import *
 
 
@@ -358,8 +359,17 @@ def intensity_based_template_matching_testing(directory, templates_dir):
 
 
 def sift_training(directory):
-    pass
-    # todo sift training
+    (keypoints, descriptors) = detect_keypoints("/Users/ajaamour/Projects/Computer-Vision-Coursework/src/lighthouse.png", 1)
+    print(keypoints.shape[0])
+
+    img = cv2.imread("/Users/ajaamour/Projects/Computer-Vision-Coursework/src/lighthouse.png")
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    for i in range(0, keypoints.shape[0]):
+        cv2.circle(img, (int(keypoints[i][0]), int(keypoints[i][1])), 5, (0, 255, 0), thickness=1, lineType=8, shift=0)
+
+    cv2.imshow("img", img)
+    cv2.waitKey(0)
 
 
 def sift_testing(directory):
