@@ -2,7 +2,6 @@ import argparse
 import pickle
 
 from matplotlib import pyplot as plt
-from scipy import ndimage
 
 import src.config as settings
 from src.convolution import *
@@ -139,11 +138,12 @@ def blur_image(directory, image):
     plt.subplot(4, 3, 12), plt.imshow(difference, cmap='gray')
     plt.title('Difference'), plt.xticks([]), plt.yticks([])
 
-    # print("Difference={}".format(sum(library_conv) - sum(custom_conv)))
-    # cv2.imshow("custom_conv", custom_conv)
-    # cv2.imshow("library_conv", library_conv)
-    # cv2.imshow("difference", difference)
-    # cv2.waitKey(0)
+    if settings.debug:
+        print("Difference={}".format(sum(library_conv) - sum(custom_conv)))
+        cv2.imshow("custom_conv", custom_conv)
+        cv2.imshow("library_conv", library_conv)
+        cv2.imshow("difference", difference)
+        cv2.waitKey(0)
 
     plt.show()
 
