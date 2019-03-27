@@ -11,11 +11,8 @@ def fill_black(img):
     :param img: the gray scale image
     :return: the gray scale image with black pixels rather than white pixels
     """
-    # loop through each pixel in the image
-    for i in range(0, img.shape[0]):
-        for j in range(0, img.shape[1]):
-            if img[i, j] == 255:  # look for white pixels
-                img[i, j] = 0  # replace with black pixels
+    img[img >= [255, 255, 255]] = 0
+    # print(np.count_nonzero(np.all(img == [255, 255, 255], axis=2)))  # print the number of white pixels in the image
     return img
 
 

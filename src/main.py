@@ -160,14 +160,22 @@ def intensity_based_template_matching_training(directory):
 
         # read the image from file, convert it to gray scale, and replace white pixels with black pixels
         img = cv2.imread(directory + "png/" + image)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #normalized = normalize_image(gray)
-        img = fill_black(gray)
+        # normalized = normalize_image(gray)
+        img = fill_black(img)
+
+        img_b, img_g, img_r = cv2.split(img)
 
         # start generating the pyramid of templates
         for p in scaling_pyramid_depths:
             # scale the image by subsampling it p times
-            scaled_img = subsample_image(img, p)
+            scaled_img_b = subsample_image(img_b, p)
+            scaled_img_g = subsample_image(img_g, p)
+            scaled_img_r = subsample_image(img_r, p)
+
+            scaled_img = cv2.merge((scaled_img_b, scaled_img_g, scaled_img_r))
+
+            # cv2.imshow("scaled", scaled_img)
+            # cv2.waitKey(0)
 
             # rotate the scaled image by r degrees
             for r in rotations:
@@ -197,7 +205,7 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     :param directory: path to the testing dataset
     :return: None
     """
-    testing_img = cv2.imread("dataset/Test/test_5.png", 0)
+    testing_img = cv2.imread("dataset/Test/test_5.png")
     # testing_img = normalize_image(testing_img)
 
     for classname in os.listdir(templates_dir):
@@ -234,13 +242,15 @@ def intensity_based_template_matching_testing(directory, templates_dir):
         for t in os.listdir(templates_dir + "/" + classname + "/"):
             # print(templates_dir + template)
             template = np.load(templates_dir + "/" + classname + "/" + t)
-            w, h = template.shape[::-1]
 
             # show images
             if settings.debug:
                 cv2.imshow("from_binary", template)
                 cv2.imshow("testing_img", testing_img)
                 cv2.waitKey(0)
+
+            w = template.shape[0]
+            h = template.shape[1]
 
             # Apply manual template matching
             # correlation_for_loops(testing_img, template)
@@ -304,7 +314,7 @@ def intensity_based_template_matching_testing(directory, templates_dir):
                 plt.show()
 
         print(cur_vals['max_val'])
-        if cur_vals['max_val'] > 0.54:  # threshold to ignore low values
+        if cur_vals['max_val'] > 0.50:  # threshold to ignore low values
             max_loc = cur_vals['max_loc']
             width = cur_vals['w']
             height = cur_vals['h']
@@ -356,6 +366,9 @@ def intensity_based_template_matching_testing(directory, templates_dir):
 
     cv2.imshow("img", testing_img)
     cv2.waitKey(0)
+
+    # save the result image
+    cv2.imwrite("../dataset/intensity-template-results.png", testing_img)
 
 
 def sift_training(directory):
