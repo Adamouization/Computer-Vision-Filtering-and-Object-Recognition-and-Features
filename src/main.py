@@ -372,10 +372,10 @@ def intensity_based_template_matching_testing(directory, templates_dir):
 
 
 def sift_training(directory):
-    (keypoints, descriptors) = detect_keypoints("/Users/ajaamour/Projects/Computer-Vision-Coursework/src/lighthouse.png", 1)
+    (keypoints, descriptors) = detect_keypoints("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png", 1)
     print(keypoints.shape[0])
 
-    img = cv2.imread("/Users/ajaamour/Projects/Computer-Vision-Coursework/src/lighthouse.png")
+    img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png")
     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     for i in range(0, keypoints.shape[0]):
