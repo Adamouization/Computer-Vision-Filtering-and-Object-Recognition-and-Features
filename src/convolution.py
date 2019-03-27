@@ -63,6 +63,40 @@ def perform_library_convolution(img, kernel):
     return library_conv
 
 
+def reduce_size(image, kernel):
+    """
+    Reduces the image size back to its original size by deleting the added borders by the extended convolution.
+    :param image: image to reduce
+    :param kernel: the kernel initially used on the convoluted image
+    :return: reduced image
+    """
+    new_im = image
+
+    img_height = image.shape[0]
+    img_width = image.shape[1]
+
+    kernel_height = kernel.shape[0]
+    kernel_width = kernel.shape[1]
+
+    r = int((kernel_width - 1) / 2)
+    c = int((kernel_height - 1) / 2)
+
+    # delete the right columns
+    for m in range(0, r):
+        new_im = np.delete(new_im, img_width - m - 1, 1)
+    # delete bottom rows
+    for m in range(0, c):
+        new_im = np.delete(new_im, img_height - m - 1, 0)
+    # delete left columns
+    for m in range(0, r):
+        new_im = np.delete(new_im, 0, 1)
+    # delete top rows
+    for m in range(0, c):
+        new_im = np.delete(new_im, 0, 0)
+
+    return new_im
+
+
 def gaussian_kernel(rows, columns, dev=1):
     """
     Generates a gaussian matrix to be used to blur an image when used as a convolution filter.

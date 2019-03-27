@@ -87,56 +87,56 @@ def blur_image(directory, image):
     }
 
     # Gaussian Blur
+    print("Gaussian Blur")
     custom_conv = perform_custom_convolution(gray, filters['gaussian_filter'])
     library_conv = perform_library_convolution(gray, filters['gaussian_filter'])
-    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    print("No difference between library and custom convolution: {}".format(np.all(difference == 0)))
+    is_different = np.all(difference == 0)
     plt.subplot(4, 3, 1), plt.imshow(custom_conv, cmap='gray')
     plt.title("Gaussian blur"), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 2), plt.imshow(library_conv, cmap='gray')
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 3), plt.imshow(difference, cmap='gray')
-    plt.title('Difference'), plt.xticks([]), plt.yticks([])
+    plt.title('is identical: {}'.format(is_different)), plt.xticks([]), plt.yticks([])
 
     # Uniform Blur
+    print("Uniform Blur")
     custom_conv = perform_custom_convolution(gray, filters['sharpen'])
     library_conv = perform_library_convolution(gray, filters['sharpen'])
-    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    print("No difference between library and custom convolution: {}".format(np.all(difference == 0)))
+    is_different = np.all(difference == 0)
     plt.subplot(4, 3, 4), plt.imshow(custom_conv, cmap='gray')
     plt.title("Sharpen blur"), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 5), plt.imshow(library_conv, cmap='gray')
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 6), plt.imshow(difference, cmap='gray')
-    plt.title('Difference'), plt.xticks([]), plt.yticks([])
+    plt.title('is identical: {}'.format(is_different)), plt.xticks([]), plt.yticks([])
 
-    # Vertical Edge
+    # Horizontal Edge
+    print("Horizontal Gradient")
     custom_conv = perform_custom_convolution(gray, filters['horizontal_edge_detector'])
     library_conv = perform_library_convolution(gray, filters['horizontal_edge_detector'])
-    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    print("No difference between library and custom convolution: {}".format(np.all(difference == 0)))
+    is_different = np.all(difference == 0)
     plt.subplot(4, 3, 7), plt.imshow(custom_conv, cmap='gray')
     plt.title("Horizontal gradient"), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 8), plt.imshow(library_conv, cmap='gray')
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 9), plt.imshow(difference, cmap='gray')
-    plt.title('Difference'), plt.xticks([]), plt.yticks([])
+    plt.title('is identical: {}'.format(is_different)), plt.xticks([]), plt.yticks([])
 
     # Identity
+    print("Identity")
     custom_conv = perform_custom_convolution(gray, filters['identity'])
     library_conv = perform_library_convolution(gray, filters['identity'])
-    print("custom_conv:{} - library_conv:{}".format(custom_conv.shape, library_conv.shape))
     difference = library_conv - custom_conv
-    print("No difference between library and custom convolution: {}".format(np.all(difference == 0)))
+    is_different = np.all(difference == 0)
     plt.subplot(4, 3, 10), plt.imshow(custom_conv, cmap='gray')
     plt.title("Identity"), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 11), plt.imshow(library_conv, cmap='gray')
     plt.title('Library conv2d'), plt.xticks([]), plt.yticks([])
     plt.subplot(4, 3, 12), plt.imshow(difference, cmap='gray')
-    plt.title('Difference'), plt.xticks([]), plt.yticks([])
+    plt.title('is identical: {}'.format(is_different)), plt.xticks([]), plt.yticks([])
 
     if settings.debug:
         print("Difference={}".format(sum(library_conv) - sum(custom_conv)))
