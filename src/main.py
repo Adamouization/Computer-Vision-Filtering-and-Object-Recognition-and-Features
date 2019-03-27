@@ -160,10 +160,10 @@ def intensity_based_template_matching_training(directory):
 
         # read the image from file, convert it to gray scale, and replace white pixels with black pixels
         img = cv2.imread(directory + "png/" + image)
-        # normalized = normalize_image(gray)
         img = fill_black(img)
+        normalized = normalize_image(img)
 
-        img_b, img_g, img_r = cv2.split(img)
+        img_b, img_g, img_r = cv2.split(normalized)
 
         # start generating the pyramid of templates
         for p in scaling_pyramid_depths:
@@ -206,7 +206,7 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     :return: None
     """
     testing_img = cv2.imread("dataset/Test/test_5.png")
-    # testing_img = normalize_image(testing_img)
+    testing_img = normalize_image(testing_img)
 
     for classname in os.listdir(templates_dir):
         print(classname)
