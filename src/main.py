@@ -1,5 +1,6 @@
 import argparse
 import pickle
+import time
 
 from matplotlib import pyplot as plt
 
@@ -207,32 +208,22 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     :param directory: path to the testing dataset
     :return: None
     """
-    testing_img = cv2.imread("dataset/Test/test_5.png")
+    template_tracker = 0
+    number_of_boxes_drawn = 50  # used to calculate the number of false positives and false negatives
+
+    # read and normalise test image
+    testing_img = cv2.imread("{}test_2.png".format(directory))
     testing_img = normalize_image(testing_img)
 
+    # start measuring runtime
+    start_time = time.time()
+
     for classname in os.listdir(templates_dir):
-        print(classname)
+        template_tracker += 1
+        print("\n{}/50".format(template_tracker))
+        print("{}...".format(classname))
 
-        max_rot_for_scale = {
-            '6.25': {
-                'rot': "",
-                'val': 0
-            },
-            '12.5': {
-                'rot': "",
-                'val': 0
-            },
-            '25': {
-                'rot': "",
-                'val': 0
-            },
-            '50': {
-                'rot': "",
-                'val': 0
-            }
-        }
-
-        cur_vals = {
+        cur_best_template = {
             'class_name': " ",
             'template_name': " ",
             'min_val': 0.0,
@@ -242,7 +233,6 @@ def intensity_based_template_matching_testing(directory, templates_dir):
         }
 
         for t in os.listdir(templates_dir + "/" + classname + "/"):
-            # print(templates_dir + template)
             template = np.load(templates_dir + "/" + classname + "/" + t)
 
             # show images
@@ -260,23 +250,8 @@ def intensity_based_template_matching_testing(directory, templates_dir):
 
             # Apply library template matching
             method = eval('cv2.TM_CCORR_NORMED')  # cv2.TM_SQDIFF_NORMED
-            res = cv2.matchTemplate(testing_img, template, method)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-            if settings.debug:
-                scale = get_scaling_from_template(t)
-                if scale == '6' and max_val > max_rot_for_scale['6.25']['val']:
-                    max_rot_for_scale['6.25']['rot'] = get_rotation_from_template(t)
-                    max_rot_for_scale['6.25']['val'] = max_val * 0.5
-                elif scale == '12' and max_val > max_rot_for_scale['12.5']['val']:
-                    max_rot_for_scale['12.5']['rot'] = get_rotation_from_template(t)
-                    max_rot_for_scale['12.5']['val'] = max_val * 0.6
-                elif scale == '25' and max_val > max_rot_for_scale['25']['val']:
-                    max_rot_for_scale['25']['rot'] = get_rotation_from_template(t)
-                    max_rot_for_scale['25']['val'] = max_val * 0.8
-                elif scale == '50' and max_val > max_rot_for_scale['50']['val']:
-                    max_rot_for_scale['50']['rot'] = get_rotation_from_template(t)
-                    max_rot_for_scale['50']['val'] = max_val * 1
+            correlation_results = cv2.matchTemplate(testing_img, template, method)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(correlation_results)
 
             # penalties for smaller images
             scale = get_scaling_from_template(t)
@@ -289,73 +264,66 @@ def intensity_based_template_matching_testing(directory, templates_dir):
             elif scale == '50':
                 max_val = max_val * 0.7
 
-            if max_val > cur_vals['max_val']:
-                cur_vals = {
+            if max_val > cur_best_template['max_val']:
+                cur_best_template = {
                     'class_name': classname,
                     'template_name': t,
-                    'min_val': min_val,
                     'max_val': max_val,
-                    'min_loc': min_loc,
                     'max_loc': max_loc,
                     'h': h,
-                    'w': w,
                     'rotation': get_rotation_from_template(t)
                 }
 
+            # debugging
             if settings.debug:
                 print("max_val={}".format(max_val))
-                print("min_val={}".format(min_val))
                 print("max_loc={}".format(max_loc))
-                print("min_loc={}".format(min_loc))
                 cv2.rectangle(testing_img, max_loc, (max_loc[0] + w, max_loc[1] + h), 255, 2)
-                plt.subplot(121), plt.imshow(res, cmap='gray')
+                plt.subplot(121), plt.imshow(correlation_results, cmap='gray')
                 plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
                 plt.subplot(122), plt.imshow(testing_img, cmap='gray')
                 plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-                plt.suptitle('res')
+                plt.suptitle('correlation_results')
                 plt.show()
 
-        print(cur_vals['max_val'])
-        if cur_vals['max_val'] > 0.50:  # threshold to ignore low values
-            max_loc = cur_vals['max_loc']
-            width = cur_vals['w']
-            height = cur_vals['h']
-            rotation = cur_vals['rotation']
+        print(cur_best_template['max_val'])
+        if cur_best_template['max_val'] > 0.50:  # threshold to ignore low values
+            top_left = cur_best_template['max_loc']
+            rotation = cur_best_template['rotation']
+            height = cur_best_template['h']
+            box_corners = find_box_corners(rotation, height)
 
-            top_left = max_loc
-            bottom_right = (top_left[0] + width, top_left[1] + height)
-            second_corner_height = find_rect_corners_with_trigonometry(rotation, height)
-
-            # draw the rectangle
+            # draw the rectangle by drawing 4 lines between the 4 corners
             cv2.line(
                 img=testing_img,
-                pt1=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
-                pt2=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
+                pt1=(box_corners["P1"][0] + top_left[0], box_corners["P1"][1] + top_left[1]),
+                pt2=(box_corners["P2"][0] + top_left[0], box_corners["P2"][1] + top_left[1]),
                 color=250,
                 thickness=2
             )
             cv2.line(
                 img=testing_img,
-                pt1=(second_corner_height["P2"][0] + top_left[0], second_corner_height["P2"][1] + top_left[1]),
-                pt2=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
+                pt1=(box_corners["P2"][0] + top_left[0], box_corners["P2"][1] + top_left[1]),
+                pt2=(box_corners["P3"][0] + top_left[0], box_corners["P3"][1] + top_left[1]),
                 color=200,
                 thickness=2
             )
             cv2.line(
                 img=testing_img,
-                pt1=(second_corner_height["P3"][0] + top_left[0], second_corner_height["P3"][1] + top_left[1]),
-                pt2=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
+                pt1=(box_corners["P3"][0] + top_left[0], box_corners["P3"][1] + top_left[1]),
+                pt2=(box_corners["P4"][0] + top_left[0], box_corners["P4"][1] + top_left[1]),
                 color=150,
                 thickness=2
             )
             cv2.line(
                 img=testing_img,
-                pt1=(second_corner_height["P4"][0] + top_left[0], second_corner_height["P4"][1] + top_left[1]),
-                pt2=(second_corner_height["P1"][0] + top_left[0], second_corner_height["P1"][1] + top_left[1]),
+                pt1=(box_corners["P4"][0] + top_left[0], box_corners["P4"][1] + top_left[1]),
+                pt2=(box_corners["P1"][0] + top_left[0], box_corners["P1"][1] + top_left[1]),
                 color=100,
                 thickness=2
             )
 
+            # print classname above the box
             cv2.putText(
                 img=testing_img,
                 text=classname,
@@ -365,12 +333,16 @@ def intensity_based_template_matching_testing(directory, templates_dir):
                 color=(255, 255, 255),
                 lineType=2
             )
+        else:
+            number_of_boxes_drawn -= 1
 
+    # print runtime
+    print("\n--- Runtime: {} seconds ---".format(time.time() - start_time))
+    print("Number of boxes drawn = {}".format(number_of_boxes_drawn))
+
+    # show the final image with the boxes
     cv2.imshow("img", testing_img)
     cv2.waitKey(0)
-
-    # save the result image
-    cv2.imwrite("../dataset/intensity-template-results.png", testing_img)
 
 
 def sift_training(directory):

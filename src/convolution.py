@@ -4,7 +4,7 @@ import numpy as np
 from scipy import ndimage
 
 
-def extended_convolution(image, kernel):
+def convolution(image, kernel):
     """
     Outputs an image of the same size as the original. Treats areas outside of the image as zero. Uses images from the
     Training dataset to test the function with a range of kernels: blurs of different sizes and edge detectors in
@@ -35,7 +35,7 @@ def extended_convolution(image, kernel):
             accumulator = 0
             for k in range(-r - 1, r):
                 for l in range(-c - 1, c):
-                    accumulator = accumulator + kernel[r + k + 1, c + l + 1] * extended_img[i + k, j + l]
+                    accumulator += kernel[r + k + 1, c + l + 1] * extended_img[i + k, j + l]
             output_img[i - r - 1, j - c - 1] = accumulator
 
     return output_img
@@ -48,7 +48,7 @@ def perform_custom_convolution(img, kernel):
     :param kernel: the kernel to convolute with
     :return: the convoluted image
     """
-    return extended_convolution(img, kernel)
+    return convolution(img, kernel)
 
 
 def perform_library_convolution(img, kernel):
