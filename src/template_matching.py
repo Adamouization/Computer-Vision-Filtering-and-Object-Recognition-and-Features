@@ -27,11 +27,12 @@ def normalize_image(img):
     return normalized_img
 
 
-def subsample_image(img, pyramid_depth):
+def subsample_image(img, pyramid_depth, gaussian_filter):
     """
     Subsamples the gray scale image multiple times by half.
     :param img: the gray scale image to subsample
     :param pyramid_depth: the number of times to subsample by half
+    :param gaussian_filter: the gaussian filter to blur the image
     :return: the subsampled image
     """
     # no downsampling: return same size image
@@ -39,7 +40,6 @@ def subsample_image(img, pyramid_depth):
         return img
 
     # blur the image using the gaussian kernel
-    gaussian_filter = gaussian_kernel(5, 5, 15)
     blurred_img = signal.convolve2d(img, gaussian_filter, mode="full", boundary="fill", fillvalue=0)
     blurred_img = blurred_img.astype(np.uint8)
     blurred_img_reduced = reduce_size(blurred_img, gaussian_filter)

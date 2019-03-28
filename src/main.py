@@ -155,31 +155,31 @@ def intensity_based_template_matching_training(directory):
     :param directory: path to the training dataset
     :return: None
     """
+    # calculate gaussian filter once
+    gaussian_filter = gaussian_kernel(5, 5, 15)
+
     for image in get_image_filenames(directory + "png/"):
         classname = get_class_name_from_file(image)
 
         # read the image from file, convert it to gray scale, and replace white pixels with black pixels
         img = cv2.imread(directory + "png/" + image)
         img = fill_black(img)
-        normalized = normalize_image(img)
 
-        img_b, img_g, img_r = cv2.split(normalized)
+        img_b, img_g, img_r = cv2.split(img)
 
         # start generating the pyramid of templates
         for p in scaling_pyramid_depths:
             # scale the image by subsampling it p times
-            scaled_img_b = subsample_image(img_b, p)
-            scaled_img_g = subsample_image(img_g, p)
-            scaled_img_r = subsample_image(img_r, p)
+            scaled_img_b = subsample_image(img_b, p, gaussian_filter)
+            scaled_img_g = subsample_image(img_g, p, gaussian_filter)
+            scaled_img_r = subsample_image(img_r, p, gaussian_filter)
 
             scaled_img = cv2.merge((scaled_img_b, scaled_img_g, scaled_img_r))
 
-            # cv2.imshow("scaled", scaled_img)
-            # cv2.waitKey(0)
-
-            # rotate the scaled image by r degrees
+            # rotate the scaled image by r degrees and normalize it
             for r in rotations:
                 rotated_scaled_img = ndimage.rotate(scaled_img, r)
+                rotated_scaled_norm_img = normalize_image(rotated_scaled_img)
 
                 # check if directory exists, if it doesn't create it
                 if not os.path.exists("{}/templates/{}".format(directory, classname)):
@@ -190,7 +190,7 @@ def intensity_based_template_matching_training(directory):
                     "{}/templates/{}/rot{}-sca{}.dat".format(directory, classname, int(r), get_scale_in_percentage(p)),
                     'wb'
                 )
-                pickle.dump(rotated_scaled_img, file)
+                pickle.dump(rotated_scaled_norm_img, file)
                 file.close()
         print("Generated templates for {}".format(classname))
 
