@@ -7,6 +7,7 @@ import src.config as settings
 from src.convolution import *
 from src.helpers import *
 from src.sift import *
+from src.sift import *
 from src.template_matching import *
 
 
@@ -359,21 +360,27 @@ def intensity_based_template_matching_testing(directory, templates_dir):
 
 
 def sift_training(directory):
-    (keypoints, descriptors) = detect_keypoints("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png", 1)
+    (keypoints, descriptors) = get_features("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png", 10)
     print(keypoints.shape[0])
+    print(keypoints)
 
     img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png")
     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    for i in range(0, keypoints.shape[0]):
-        cv2.circle(img, (int(keypoints[i][0]), int(keypoints[i][1])), 5, (0, 255, 0), thickness=1, lineType=8, shift=0)
 
+    for i in range(0, keypoints.shape[0]):
+        radius = int(keypoints[i][2])
+        cv2.circle(img, (int(keypoints[i][1]), int(keypoints[i][0])), radius, (0, 255, 0), thickness=1, lineType=8, shift=0)
+        #cv2.line(img=img,pt1=,pt2=,color=100,thickness=2)
     cv2.imshow("img", img)
     cv2.waitKey(0)
+    '''
+    '''
+
 
 
 def sift_testing(directory):
-    pass
+    match_template("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouseaaa.png","/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png",1,10)
     # todo sift testing
 
 
