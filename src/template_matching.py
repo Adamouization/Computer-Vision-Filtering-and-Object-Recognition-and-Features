@@ -2,20 +2,17 @@ import cv2
 import numpy as np
 from scipy import signal
 
-from src.convolution import gaussian_kernel, reduce_size
+from src.convolution import reduce_size
 
 
 def fill_black(img):
     """
-    Replace white pixels (value 255) with black pixels (value 0) for a gray scale image.
-    :param img: the gray scale image
-    :return: the gray scale image with black pixels rather than white pixels
+    Replace white pixels (value 255) with black pixels (value 0) for an RGB image.
+    :param img: the RGB image
+    :return: the image with black pixels rather than white pixels
     """
-    # loop through each pixel in the image
-    for i in range(0, img.shape[0]):
-        for j in range(0, img.shape[1]):
-            if img[i, j] == 255:  # look for white pixels
-                img[i, j] = 0  # replace with black pixels
+    img[img >= [255, 255, 255]] = 0
+    # print(np.count_nonzero(np.all(img == [255, 255, 255], axis=2)))  # print the number of white pixels in the image
     return img
 
 
@@ -30,11 +27,12 @@ def normalize_image(img):
     return normalized_img
 
 
-def subsample_image(img, pyramid_depth):
+def subsample_image(img, pyramid_depth, gaussian_filter):
     """
     Subsamples the gray scale image multiple times by half.
     :param img: the gray scale image to subsample
     :param pyramid_depth: the number of times to subsample by half
+    :param gaussian_filter: the gaussian filter to blur the image
     :return: the subsampled image
     """
     # no downsampling: return same size image
@@ -42,7 +40,6 @@ def subsample_image(img, pyramid_depth):
         return img
 
     # blur the image using the gaussian kernel
-    gaussian_filter = gaussian_kernel(5, 5, 15)
     blurred_img = signal.convolve2d(img, gaussian_filter, mode="full", boundary="fill", fillvalue=0)
     blurred_img = blurred_img.astype(np.uint8)
     blurred_img_reduced = reduce_size(blurred_img, gaussian_filter)
@@ -77,7 +74,7 @@ def subsample_image(img, pyramid_depth):
     return scaled_img
 
 
-def find_rect_corners_with_trigonometry(angle, img_height):
+def find_box_corners(angle, img_height):
     """
     Calculates the coordinates of a rotated rectangle.
     :param angle: the angle to rotate the rectangle's coordinates to
@@ -102,9 +99,8 @@ def find_rect_corners_with_trigonometry(angle, img_height):
 
     k = (np.sin(alpha)) * (np.sin(alpha))
     h = img_height
-
-    d = (np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
-    # other possible solution with -d = -(np.sqrt(h*h*k*k-h*h*k*k*k*k)+(h*k*k-h))/(2*k*k-1)
+    d = (np.sqrt((h**2 * k**2) - (h**2 * k**4)) + (h * k**2 - h)) / (2 * k**2 - 1)
+    # other possible solution: -d = -(np.sqrt(h**2 * k**2 - h**2 * k**4) + (h * k**2 - h)) / (2 * k**2 - 1)
 
     c = img_height - d
 
