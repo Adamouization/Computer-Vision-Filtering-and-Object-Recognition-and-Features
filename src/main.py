@@ -161,10 +161,11 @@ def intensity_based_template_matching_training(directory):
     for image in get_image_filenames(directory + "png/"):
         classname = get_class_name_from_file(image)
 
-        # read the image from file, convert it to gray scale, and replace white pixels with black pixels
+        # read the image from file and replace white background pixels with black pixels
         img = cv2.imread(directory + "png/" + image)
         img = fill_black(img)
 
+        # split image into 3 images for R-G-B
         img_b, img_g, img_r = cv2.split(img)
 
         # start generating the pyramid of templates
@@ -174,6 +175,7 @@ def intensity_based_template_matching_training(directory):
             scaled_img_g = subsample_image(img_g, p, gaussian_filter)
             scaled_img_r = subsample_image(img_r, p, gaussian_filter)
 
+            # merge back the 3 R-G-B channels into one image
             scaled_img = cv2.merge((scaled_img_b, scaled_img_g, scaled_img_r))
 
             # rotate the scaled image by r degrees and normalize it
