@@ -212,7 +212,7 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     number_of_boxes_drawn = 50  # used to calculate the number of false positives and false negatives
 
     # read and normalise test image
-    testing_img = cv2.imread("{}test_2.png".format(directory))
+    testing_img = cv2.imread("{}test_5.png".format(directory))
     testing_img = normalize_image(testing_img)
 
     # start measuring runtime
@@ -251,7 +251,7 @@ def intensity_based_template_matching_testing(directory, templates_dir):
             # Apply library template matching
             method = eval('cv2.TM_CCORR_NORMED')  # cv2.TM_SQDIFF_NORMED
             correlation_results = cv2.matchTemplate(testing_img, template, method)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(correlation_results)
+            _, max_val, _, max_loc = cv2.minMaxLoc(correlation_results)
 
             # penalties for smaller images
             scale = get_scaling_from_template(t)
