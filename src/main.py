@@ -345,13 +345,18 @@ def sift(directory):
     :param directory:
     :return: None
     """
-    # well and bench
+    # start measuring runtime
+    start_time = time.time()
+
     (keypoints, descriptors) = get_features(directory + "png/010-bench.png", thr=10)
     # (keypoints, descriptors) = get_features(directory + "png/013-water-well.png", 10)
 
     print("SIFT keypoints:")
     print(keypoints)
     print("\nFinished calculating SIFT Keypoints")
+
+    # print runtime
+    print("\n--- Runtime: {} seconds ---".format(round(time.time() - start_time, 2)))
 
     img = cv2.imread(directory + "png/010-bench.png")
     # img = cv2.imread("directory" + "png/013-water-well.png")
