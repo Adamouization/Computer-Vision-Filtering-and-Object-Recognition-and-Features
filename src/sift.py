@@ -213,7 +213,9 @@ def get_features(img, thr):
                         # matches scale of image (will be normalised for calculation of descriptors)
                         scale_factor = (2 ** (n - 1))
                         # add orientation and scale
-                        keypoints[key_count, :] = np.array([int(j * scale_factor), int(k * scale_factor), all_scales[i + n * 2], loc_of_max])
+                        keypoints[key_count, :] = np.array(
+                            [int(j * scale_factor), int(k * scale_factor), all_scales[i + n * 2], loc_of_max]
+                        )
                         key_count += 1
 
     descriptors = np.zeros([keypoints.shape[0], 128])
@@ -225,7 +227,10 @@ def get_features(img, thr):
         # blocks hosting the 16 histograms
         for j in range(-2, 2):
             for k in range(-2, 2):
-                if keypoints[i, 0] + j * 4 < 0 or keypoints[i, 0] + (j + 1) * 4 > img_at_scale[1].shape[0] - 1 or keypoints[i, 1] + k * 4 < 0 or keypoints[i, 1] + (k + 1) * 4 > img_at_scale[1].shape[1] - 1:  # if window out of image
+                if keypoints[i, 0] + j * 4 < 0 or \
+                        keypoints[i, 0] + (j + 1) * 4 > img_at_scale[1].shape[0] - 1 or \
+                        keypoints[i, 1] + k * 4 < 0 or \
+                        keypoints[i, 1] + (k + 1) * 4 > img_at_scale[1].shape[1] - 1:  # if window out of image
                     continue
 
                 # 8 buckets for the 8 directions (8 was also a value suggested by Lowe (2004))
@@ -240,11 +245,18 @@ def get_features(img, thr):
 
                         # weight depends on the magnitude of each cell
                         # and on its distance from the centre of the Gaussian
-                        weight = mag_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * window.pdf([keypoints[i, 0] + x, keypoints[i, 1] + y])  # probability density function
+                        weight = mag_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * \
+                                 window.pdf([keypoints[i, 0] + x, keypoints[i, 1] + y])  # probability density function
 
                         # if center of circle, i.e. j and k are reached, i.e. when x and y are 0,
                         # then maximum weight (the same way as before)
-                        bucket_to_choose = int(np.clip(np.floor(ori_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * 8 / 36) - 1, 0, 7))  # fit into buckets
+                        bucket_to_choose = int(np.clip(  # fit into buckets
+                            a=np.floor(
+                                ori_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * 8 / 36
+                            ) - 1,
+                            a_min=0,
+                            a_max=7
+                        ))
                         buckets[bucket_to_choose] += weight
 
                         # setting up relative coordinate environment to simplify indices
@@ -255,7 +267,7 @@ def get_features(img, thr):
                         current_4by4_chunck = j_helper * 4 + k_helper
 
                         # range for 1D interpretation of histograms
-                        current_location_in_megaarray = (current_4by4_chunck) * 8
+                        current_location_in_megaarray = current_4by4_chunck * 8
 
                         # location of exact bin (among the 128 possible bins) in the 128-dimensional descriptor array
                         descriptors[i, current_location_in_megaarray + bucket_to_choose] += weight
@@ -274,9 +286,21 @@ def draw_sift_boxes_and_directions(img, keypoints):
     for i in range(0, keypoints.shape[0]):
         x = int(keypoints[i][1])
         y = int(keypoints[i][0])
+
         scale = int(keypoints[i][2])
         rotation = keypoints[i][3] * 10
         alpha = np.deg2rad(rotation)
+
+        # draw circle
         cv2.circle(testing_img, (x, y), scale, (0, 255, 0), thickness=6, lineType=8, shift=0)
-        cv2.line(img=testing_img, pt1=(x, y), pt2=(int(x + (np.cos(alpha) * scale * 3)), int(y + (np.sin(alpha) * scale * 3))), color=(0, 0, 255), thickness=4)
+
+        # draw line for direction
+        cv2.line(
+            img=testing_img,
+            pt1=(x, y),
+            pt2=(int(x + (np.cos(alpha) * scale * 3)), int(y + (np.sin(alpha) * scale * 3))),
+            color=(0, 0, 255),
+            thickness=4
+        )
+
     return testing_img
