@@ -58,13 +58,7 @@ def main():
             exit(0)
 
     elif settings.model_type == 'sift':
-        if settings.mode == 'train':
-            sift_training(training_dataset_directory)
-        elif settings.mode == 'test':
-            sift_testing(testing_dataset_directory)
-        else:
-            print("Invalid mode chosen. Choose from 'train' or 'test'")
-            exit(0)
+        sift(training_dataset_directory)
 
     else:
         print("Invalid model chosen. Choose from 'blur', 'intensity' or 'sift'")
@@ -345,21 +339,26 @@ def intensity_based_template_matching_testing(directory, templates_dir):
     cv2.waitKey(0)
 
 
-def sift_training(directory):
-    (keypoints, descriptors) = get_features("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png", 10)
+def sift(directory):
+    """
+    Function to calculate SIFT key points and draw boxes around them.
+    :param directory:
+    :return: None
+    """
+    # well and bench
+    (keypoints, descriptors) = get_features(directory + "png/010-bench.png", thr=10)
+    # (keypoints, descriptors) = get_features(directory + "png/013-water-well.png", 10)
+
+    print("SIFT keypoints:")
     print(keypoints)
-    img = cv2.imread("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png")
-    draw_squares(img, keypoints, descriptors)
-    print("end")
-    '''
-    '''
+    print("\nFinished calculating SIFT Keypoints")
 
+    img = cv2.imread(directory + "png/010-bench.png")
+    # img = cv2.imread("directory" + "png/013-water-well.png")
 
-
-def sift_testing(directory):
-    print("hello")
-    #match_template("/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouseaaa.png","/Users/andrealissak/COSE/UNI/SEMESTER 2/Computer-Vision-Coursework/src/lighthouse.png",1,10)
-    # todo sift testing
+    final_img = draw_sift_boxes_and_directions(img, keypoints)
+    cv2.imshow("SIFT Key Points", final_img)
+    cv2.waitKey(0)
 
 
 if __name__ == "__main__":
