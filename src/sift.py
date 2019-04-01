@@ -147,18 +147,9 @@ def get_features(img, thr):
         for i in range(0, 3):
             for j in range(1, img_at_scale[n].shape[0] - 1):
                 for k in range(1, img_at_scale[n].shape[1] - 1):
-                    mag_at_scale[n][j, k, i] = (
-                                                   ((img_at_scale[n][j + 1, k] - img_at_scale[n][j - 1, k]) ** 2) +
-                                                   ((img_at_scale[n][j, k + 1] - img_at_scale[n][j, k - 1]) ** 2)
-                                               ) ** 0.5
+                    mag_at_scale[n][j, k, i] = (((img_at_scale[n][j + 1, k] - img_at_scale[n][j - 1, k]) ** 2) + ((img_at_scale[n][j, k + 1] - img_at_scale[n][j, k - 1]) ** 2)) ** 0.5
                     # converted from radians to degrees, but divided by 10 (will be useful later)
-                    ori_at_scale[n][j, k, i] = (36 / (2 * np.pi)) * \
-                                               (np.pi + np.arctan2((img_at_scale[n][j, k + 1] -
-                                                                    img_at_scale[n][j, k - 1]),
-                                                                   (img_at_scale[n][j + 1, k] -
-                                                                    img_at_scale[n][j - 1, k])
-                                                                   )
-                                                )
+                    ori_at_scale[n][j, k, i] = (36 / (2 * np.pi)) * (np.pi + np.arctan2((img_at_scale[n][j, k + 1] - img_at_scale[n][j, k - 1]), (img_at_scale[n][j + 1, k] - img_at_scale[n][j - 1, k])))
 
     # getting the length of the keypoint matrix
     key_sum = int(np.sum(max_min_at_scale[0]) + np.sum(max_min_at_scale[1]) + np.sum(max_min_at_scale[2]))
@@ -245,8 +236,7 @@ def get_features(img, thr):
 
                         # weight depends on the magnitude of each cell
                         # and on its distance from the centre of the Gaussian
-                        weight = mag_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * \
-                                 window.pdf([keypoints[i, 0] + x, keypoints[i, 1] + y])  # probability density function
+                        weight = mag_at_scale[1][int(keypoints[i, 0] + x), int(keypoints[i, 1] + y), 0] * window.pdf([keypoints[i, 0] + x, keypoints[i, 1] + y])  # probability density function
 
                         # if center of circle, i.e. j and k are reached, i.e. when x and y are 0,
                         # then maximum weight (the same way as before)
