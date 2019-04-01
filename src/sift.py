@@ -1,12 +1,7 @@
-import itertools
-
 import cv2
 import numpy as np
-from numpy.linalg import norm
-import numpy.linalg
-from scipy import misc, ndimage, signal
+from scipy import misc, ndimage
 from scipy.stats import multivariate_normal
-from src.template_matching import find_box_corners
 
 
 def get_features(img, thr):
@@ -26,6 +21,7 @@ def get_features(img, thr):
         for m in range(0, n_of_different_sig):  # all octaves
             octave_at_scale[n][m] = sig * (k ** (2 * n + m))
             all_scales[(n_octaves - 1) * n + m] = sig * (k ** (2 * n + m))
+
     # Standard deviations for Gaussian smoothing
     # octave_1_scales = np.array([sig * (k ** 0), sig * (k ** 1), sig * (k ** 2), sig * (k ** 3), sig * (k ** 4)])
     # octave_2_scales = np.array([sig * (k ** 2), sig * (k ** 3), sig * (k ** 4), sig * (k ** 5), sig * (k ** 6)])
