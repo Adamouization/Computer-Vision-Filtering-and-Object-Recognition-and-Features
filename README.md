@@ -1,92 +1,40 @@
 # Computer-Vision-Coursework
 
-## 2019 CM30080 Coursework: Filtering, Object Recognition & Features
+## 1) Introduction
 
-## Introduction
+For this project, the programming language of choice was Python. It was chosen over MATLAB due to the availability of functions similar to MATLAB's functions through libraries, and due to the syntax and ﬂexibility of the language. With libraries such as OpenCV for image manipulations, Numpy and SciPy for more advanced mathematical functions including array manipulations, and MatPlotLib for plotting data, Python has all the tools for the task at hand.
 
-In this lab we implemented algorithms for matching images (similar to the principle of playing Dobble). This will be split into three tasks, 1. Implementing 2D Image convolution, 2. Intensity-based template matching: where we will use correlation for object recognition, and 3. Feature-based template matching using SIFT: where we will implement the method
-proposed by Lowe [1- 3 ] and perform matching using Sum of Squared Differences (SSD). 
+## 2) Task 1: Image Convolution
 
-A Training dataset of images (icons) as shown in Figure 1 and a Testing dataset (various combinations) as shown in Figure 2 will be provided. The icons from the Training dataset have to be recognised and matched in Test dataset provided.
+For the image convolution task, a function to perform convolution on a grey image was written. This function takes an image to operate on and a kernel to apply on the image. In order to preserve image size, extra padding is added on the edges of the original image. The function can be found in Listing A.
 
-## Task 1: Image convolution
+Multiple ﬁlters are used to test the convolution function, including a Gaussian kernel, a sharpen kernel, a horizontal edge detector (Sobel ﬁlter) and an identity matrix. To conﬁrm that the results are correct, the resulting ﬁltered image compared to a library function. SciPy's "convolve" function was used to carry out this task as it is the equivalent of MATLAB's "conv2" function. The comparison is done by subtracting the function's result from the library's result and checking that all the values are equal to 0. See Listing B for the ﬁlters used and the test.
 
-A function which takes an image and a kernel as inputs, and computes the two-dimensional convolution of the two.
+## 3) Task 2: Intensity-Based Template Matching
 
-**Output 1 :** The function should output an image of the same size as the original. Areas outside of the image are treated as zero. The results to the in-built conv2 function of MATLAB. Tested with a range of kernels: blurs of different sizes and edge detectors in different directions.
+### 3.1) Pre-Processing
 
-## Task 2: Intensity-based template matching
+Multiple steps are followed to pre-process the training dataset. Firs, The background is set to 0 for each image in the training dataset. This is done by looking for white pixels (value 255) and replacing them with black pixels (value 0), as depicted in Listing C line 3. Next, each rotated and scaled template in the pyramid is then normalised using OpenCV's "normalize" function, which can be found in Listing C line 10. Finally, images are processed in RGB (3 channels) rather than being converting to grey scale (1 channel), therefore avoiding the loss of information and accuracy.
 
-A function which takes an image from Test dataset and outputs the following:
+### 3.2) Gaussian Pyramid Generation
 
-**Output 2.1:** Detect objects in Test images, recognize to which class (from the 50 Training image classes) it belongs, and identify their scales and orientations. For visual demonstration the function opens a box around each detected object and indicate its class number according to the order of the Training images. This box is scaled and rotated according to the object’s scale and orientation.
+A Gaussian Pyramid is generated for each image in the training dataset. The scaling and rotation values for the pyramids were chosen by manually inspecting the training images to ﬁnd out what angles the images were rotated to and by how much the images were scaled down. Therefore, scales of 50%, 25%, 12.5% and 6.25% were chosen, along with rotations ranging from 0 ◦ to 330 ◦ with steps of 30 ◦ for each scale. A brief overview of the training function used to generate the templates can be found in Listing D.
 
-Algorithm evaluated on all Test images with the overall False Positive (FP), True Positive (TP) rates and the average runtime reported.
+The rotation of the templates was achieved through SciPy's "rotate" function (Listing D, line 22), while the scaling down was done manually with a custom subsampling function that recursively scales the image down by half by subsampling one pixel every two pixels (see Listing E). The subsampling blurring uses a Gaussian Filter with a size of 5x5 and a standard deviation σ = 15.
 
-**Creating scaled & rotated templates:** A Gaussian pyramid of appropriate scale levels for each Training image is created. This task implements appropriate Gaussian blurs (using own convolution algorithm) and subsampling of the training images through a hierarchy. After creating scaled templates, this set is appended by creating Gaussian pyramids for an appropriate number of orientations per class. This creates the overall scaled & rotated templates.
+Each template is saved in separate binary ".dat" ﬁles for quicker I/O operations using Python's "pickle" library for object serialisation conversion in byte streams (see Listing D, line 26).
 
-Choice of parameters: Gaussian kernel specs, initial/final scales, number of scale levels i.e. how many octaves, number of rotations, etc.
+## 3.3) Output
 
-**Pre-processing:** For each (scaled and rotated) template the background is set to zero and normalized it (the mean equal is set to zero, and the Euclidean norm of the template is set to 1. For the Test data all backgrounds are set to zero.
+#### 3.3.1) Testing
 
-**Intensity-based matching (related to output 2.1):** Slide each template image 푇 over the given test
-image 퐼 (across x, y directions) and report the similarity score based on their correlations 𝑐𝑜𝑟(𝑥, 𝑦) = sum 𝑇(𝑖, 𝑗)𝐼(𝑖 + 𝑥, 𝑗 + 𝑦))
+For the testing phase, each template previously stored in binary ﬁles is loaded in memory and is slid over one of the images from the testing dataset. All the templates for a single class are used to calculate the correlation score using Equation 1. The template with the highest score for a class is kept as the best match for that class, meaning there are 50 potential matching templates. Each template is then ﬁltered based on its correlation score: it is kept if it is higher than a threshold, set at 0.5. This threshold is set empirically by testing diﬀerent values until one that gave the most matches is found.
 
-Appropriate thresholds on the similarity measure are defined, along with a proper non-maxima suppression strategy
-returned with the **output 2.1** to minimize the False Positive and False Negative rates.
+cor(x,y) = T(i,j) * I(i+x,j+y)
 
-## Task 3: Feature-based template matching using SIFT
+#### 3.3.2) Box Drawing
 
-Implementatin of a simple form of the scale-invariant feature transform (SIFT) method described by Lowe [1-3].
+The ﬁnal step in producing the output is to draw a box around the detected objects that passed the threshold. The scaling and the rotation of the selected templates are used to draw the rectangle at the correct scale and at the correct rotation (see Listing G). The class name is drawn along with the box rather than class number to improve the output's clarity.
 
-First of all, a function which creates a DoG pyramid from an image is created. This function upgrades
-the Gaussian pyramid implementation in the last task (note: unlike the previous section, each
-level i.e. octave of the pyramid, will have multiple (for example s=3) Gaussians applied before
-resampling). Next, local extrema are searched in this DoG space. Each interest point is then a point given
-by (𝑥,𝜎), where 𝜎 represents the scale of the feature.
-
-**Output 3.1 ( 4 pts):** Visualise the results on the original image as boxes where each box is scaled by
-the size of the feature it represents.
-
-**Output 3.2 (4 pts):** SIFT interest points can be refined to improve low-quality results. For this part,
-filter your results using the methods described in the references [1-3], including low contrast and
-edge removal. Indicate details of these updates in your report. Also, using the technique described in
-the papers (i.e. histogram of the weighted gradient directions), add orientations to each feature, so
-each is now represented by (푥,휎,휃), where 휃 denotes the orientation. Add details about this step in
-your report. Demonstrate your algorithm (now scaled and rotated boxes corresponding to each
-feature) on a range of images from the Training and Test datasets.
-
-**Output 3.2 ( 5 pts):** For this part, demonstrate the ability to match your features between images e.g.
-lines connecting matches. Perform a feature-based template matching in order to detect and
-recognize objects in Test dataset (for demonstration create labelled boxes around Test objects).
-Evaluate your algorithm on all test images and report the overall False Positive, True Positive rates
-and the average runtime. Show and explain cases where this scheme finds difficulty to perform
-correctly. Give insight about complexity (memory and runtime) of your algorithm in terms of the
-problem size, how does the complexity scale? Again, provide details of your approach, choice of
-parameters/thresholds in your report.
-
-Doing this requires two things: a feature descriptor, and a method for matching.
-
-- A simple feature descriptor could just be a neighbourhood of pixel values around the
-    interest point. For a more advanced feature descriptor, you could use SIFT descriptors.
-- A simple method for matching is to check the sum squared distance (SSD) of the descriptors,
-    and filter-out bad matches using the nearest neighbour ratio.
-Finally find strong correspondences between a given Test image and each of the Training image
-classes, and use this comparison for object detection and recognition.
-
-## References
-
-Lowe published two papers that describe SIFT. The one in 1999 gives basic version of the technique,
-but also includes an application to object recognition. The later paper in 2004, gives more details
-about the technique. A PowerPoint presentation from Lowe [3] is also added which highlights the
-key steps. Learning to find the relevant section of the paper you are reading is an important skill!
-
-[1] Lowe, David G. "Object recognition from local scale-invariant features." Computer vision, 1999.
-The proceedings of the seventh IEEE international conference on. Vol. 2. IEEE, 1999.
-
-[2] Lowe, David G. "Distinctive image features from scale-invariant keypoints." International journal
-of computer vision, 60.2 (2004): 91-110.
-
-[3] https://people.cs.pitt.edu/~kovashka/cs3710_sp15/features_yan.pdf
-
+A rotated rectangle needs 4 pairs of coordinates to be drawn. Obtaining one pair will make it trivial to ﬁnd the others. So, the real objective is to ﬁnd the x and y shift from the one of the hypothetical straight square. Let us denote the x shift by ∆x. Starting from a system of equation deﬁning that the height/width of the original image is h = ∆x + ∆y, that sin(α) ∗ n = ∆y and that n 2 = ∆x 2 + ∆y 2 (where n is the length of the newly rotated and scaled square). So, resulting from the above, we can ﬁnd ∆x (as shown in Equation 2), thus all the corners of the rotated square: (sin(α) = k)
 
