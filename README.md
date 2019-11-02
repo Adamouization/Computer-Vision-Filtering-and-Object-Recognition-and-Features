@@ -1,21 +1,21 @@
 # Computer Vision: Filtering, Object Recognition & Features
 
-**Intensity-based** template matching and **feature-based** template matching using **SIFT** algorithms for matching images are implemented. A [Training dataset](https://github.com/Adamouization/Computer-Vision-Coursework/tree/master/dataset/Training) of images (icons) a [Testing dataset](https://github.com/Adamouization/Computer-Vision-Coursework/tree/master/dataset/Test) (various combinations of icons) as shown in Figure 2 are used.
+**Intensity-based** template matching and **feature-based** template matching using **SIFT** algorithms for matching images are implemented. A [Training dataset](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/tree/master/dataset/Training) of images (icons) a [Testing dataset](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/tree/master/dataset/Test) (various combinations of icons) as shown in Figure 2 are used.
 
 Project developed in collaboration with [Andreak Lissak](https://github.com/yissok).
 
-The report can be read [here](https://github.com/Adamouization/Computer-Vision-Coursework/blob/master/report/report.pdf).
+The report can be read [here](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/blob/master/report/report.pdf).
 
 ## Usage
 
 Clone the repository (or download the zipped project):
-`$ git clone https://github.com/Adamouization/Computer-Vision-Coursework`
+`$ git clone https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features`
 
 Create a virtual environment for the project and activate it:
 
 ```
-virtualenv ~/Environments/Computer-Vision-Coursework
-source Computer-Vision-Coursework/bin/activate
+virtualenv ~/Environments/Computer-Vision-Filtering-and-Object-Recognition-and-Features
+source Computer-Vision-Filtering-and-Object-Recognition-and-Features/bin/activate
 ```
 
 Once you have the virtualenv activated and set up, `cd` into the project directory and install the requirements needed to run the app:
