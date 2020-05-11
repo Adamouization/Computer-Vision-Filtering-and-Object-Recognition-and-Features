@@ -2,7 +2,7 @@
 
 **Intensity-based** template matching and **feature-based** template matching using **SIFT** algorithms for matching images are implemented. A [Training dataset](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/tree/master/dataset/Training) of images (icons) a [Testing dataset](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/tree/master/dataset/Test) (various combinations of icons) as shown in Figure 2 are used.
 
-Project developed in collaboration with [Andreak Lissak](https://github.com/yissok).
+Project developed in collaboration with [yissok](https://github.com/yissok).
 
 The report can be read [here](https://github.com/Adamouization/Computer-Vision-Filtering-and-Object-Recognition-and-Features/blob/master/report/report.pdf).
 
@@ -35,5 +35,5 @@ where:
 * `--d` runs the program in debug mode with additional print statements.
 
 ## Contact
-* Emails: adam@jaamour.com & andrea.lissak@gmail.com
-* LinkedIn: [@adamjaamour](https://www.linkedin.com/in/adamjaamour/) & [@andreaklissak](https://www.linkedin.com/in/andrea-lissak-3bbb88129/) 
+* Email: adam@jaamour.com
+* LinkedIn: [@adamjaamour](https://www.linkedin.com/in/adamjaamour/)
